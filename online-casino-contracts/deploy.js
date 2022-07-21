@@ -19,11 +19,11 @@ async function deploy() {
 
     contractsDeployed[x] = {
       address: result.options.address,
-      interface: contracts[x].abi,
+      abi: contracts[x].abi,
     };
   }
   fs.writeFileSync(
-    "contractsDeployed.json",
+    "../contractsDeployed.json",
     JSON.stringify(contractsDeployed, null, 2)
   );
   provider.engine.stop();

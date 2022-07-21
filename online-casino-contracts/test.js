@@ -31,7 +31,7 @@ describe("Roullete Wheel", () => {
       });
 
       const game = await roullete.methods.fetchGame().call();
-      assert.equal(accounts[0], game.createdBy);
+      assert.equal(accounts[0], game[0]);
       assert.equal(gameState.STARTED, game.state);
     });
 
@@ -159,7 +159,7 @@ describe("Roullete Wheel", () => {
       });
 
       const game = await roullete.methods.fetchGame().call();
-      assert.equal(accounts[1], game.players[0]);
+      assert.equal(accounts[1], game[5][0]);
     });
   });
 });
