@@ -1,0 +1,143 @@
+{
+    "Roullete": {
+        "address": "0xEA60122DCED1d072f572aA00913a3566d040CBF0",
+        "interface": [
+            {
+                "inputs": [
+                    {
+                        "internalType": "uint32",
+                        "name": "_numb",
+                        "type": "uint32"
+                    },
+                    {
+                        "internalType": "uint32",
+                        "name": "_prize",
+                        "type": "uint32"
+                    }
+                ],
+                "name": "createGame",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function",
+                "signature": "0xe0bf8ec0"
+            },
+            {
+                "inputs": [],
+                "name": "endGame",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function",
+                "signature": "0x6cbc2ded"
+            },
+            {
+                "inputs": [],
+                "name": "fetchAllGames",
+                "outputs": [
+                    {
+                        "internalType": "address[]",
+                        "name": "",
+                        "type": "address[]"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function",
+                "constant": true,
+                "signature": "0xa3ad1eee"
+            },
+            {
+                "inputs": [],
+                "name": "fetchGame",
+                "outputs": [
+                    {
+                        "components": [
+                            {
+                                "internalType": "address",
+                                "name": "createdBy",
+                                "type": "address"
+                            },
+                            {
+                                "internalType": "uint32",
+                                "name": "numb",
+                                "type": "uint32"
+                            },
+                            {
+                                "internalType": "uint32",
+                                "name": "prize",
+                                "type": "uint32"
+                            },
+                            {
+                                "internalType": "uint256[]",
+                                "name": "chosen",
+                                "type": "uint256[]"
+                            },
+                            {
+                                "internalType": "address[]",
+                                "name": "players",
+                                "type": "address[]"
+                            },
+                            {
+                                "internalType": "enum Roullete.GameState",
+                                "name": "state",
+                                "type": "uint8"
+                            }
+                        ],
+                        "internalType": "struct Roullete.Game",
+                        "name": "",
+                        "type": "tuple"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function",
+                "constant": true,
+                "signature": "0x138d5357"
+            },
+            {
+                "inputs": [],
+                "name": "joinGame",
+                "outputs": [
+                    {
+                        "components": [
+                            {
+                                "internalType": "address",
+                                "name": "createdBy",
+                                "type": "address"
+                            },
+                            {
+                                "internalType": "uint32",
+                                "name": "numb",
+                                "type": "uint32"
+                            },
+                            {
+                                "internalType": "uint32",
+                                "name": "prize",
+                                "type": "uint32"
+                            },
+                            {
+                                "internalType": "uint256[]",
+                                "name": "chosen",
+                                "type": "uint256[]"
+                            },
+                            {
+                                "internalType": "address[]",
+                                "name": "players",
+                                "type": "address[]"
+                            },
+                            {
+                                "internalType": "enum Roullete.GameState",
+                                "name": "state",
+                                "type": "uint8"
+                            }
+                        ],
+                        "internalType": "struct Roullete.Game",
+                        "name": "",
+                        "type": "tuple"
+                    }
+                ],
+                "stateMutability": "payable",
+                "type": "function",
+                "payable": true,
+                "signature": "0xd4f77b1c"
+            }
+        ]
+    }
+}

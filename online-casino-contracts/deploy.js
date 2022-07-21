@@ -17,9 +17,15 @@ async function deploy() {
       })
       .send({ from: fetchedAccounts[0], gas: 2000000 });
 
-    contractsDeployed[x] = result;
+    contractsDeployed[x] = {
+      address: result.options.address,
+      interface: contracts[x].abi,
+    };
   }
-  fs.writeFileSync("contractsDeployed.json", JSON.stringify(contractsDeployed));
+  fs.writeFileSync(
+    "contractsDeployed.json",
+    JSON.stringify(contractsDeployed, null, 2)
+  );
   provider.engine.stop();
 }
 deploy();
