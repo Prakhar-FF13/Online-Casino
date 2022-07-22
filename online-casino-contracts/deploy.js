@@ -23,7 +23,7 @@ async function deploy() {
     };
   }
   fs.writeFileSync(
-    "../contractsDeployed.json",
+    "../online-casino/src/utils/contractsDeployed.json",
     JSON.stringify(contractsDeployed, null, 2)
   );
   provider.engine.stop();

@@ -1,0 +1,136 @@
+{
+  "Roullete": {
+    "address": "0x03392367b45e0589E188cbE4CC8F81d7CA220558",
+    "abi": [
+      {
+        "anonymous": false,
+        "inputs": [],
+        "name": "gameEnded",
+        "type": "event",
+        "signature": "0x2f6fe396039053a4e8f1851fd9b6e9f41e11ab1367c7588fb19fd79bcb37a315"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "gameIdx",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint8",
+            "name": "numb",
+            "type": "uint8"
+          }
+        ],
+        "name": "chooseNumber",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xe50d66a3"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint32",
+            "name": "_numb",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint32",
+            "name": "_prize",
+            "type": "uint32"
+          }
+        ],
+        "name": "createGame",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xe0bf8ec0"
+      },
+      {
+        "inputs": [],
+        "name": "endGame",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function",
+        "payable": true,
+        "signature": "0x6cbc2ded"
+      },
+      {
+        "inputs": [],
+        "name": "fetchGame",
+        "outputs": [
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          },
+          {
+            "internalType": "uint32",
+            "name": "",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint32",
+            "name": "",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "address[]",
+            "name": "",
+            "type": "address[]"
+          },
+          {
+            "internalType": "enum Roullete.GameState",
+            "name": "state",
+            "type": "uint8"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function",
+        "constant": true,
+        "signature": "0x138d5357"
+      },
+      {
+        "inputs": [],
+        "name": "joinGame",
+        "outputs": [
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "payable",
+        "type": "function",
+        "payable": true,
+        "signature": "0xd4f77b1c"
+      }
+    ]
+  }
+}

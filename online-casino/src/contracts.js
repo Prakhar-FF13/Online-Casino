@@ -1,5 +1,5 @@
 import web3 from "./web3";
-const contractsData = require("../../contractsDeployed.json");
+const contractsData = require("./contractsDeployed.json");
 
 const contracts = {};
 

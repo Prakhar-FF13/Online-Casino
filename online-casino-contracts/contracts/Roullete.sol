@@ -25,7 +25,7 @@ contract Roullete {
         address playerAddress_,
         uint256 playerCount,
         uint32 prize,
-        uint256 gameIdx
+        uint32 numb
     );
     event gameEnded();
 
@@ -74,7 +74,7 @@ contract Roullete {
             msg.sender,
             randGame.players.length,
             randGame.prize,
-            gameIdx
+            randGame.numb
         );
     }
 
@@ -155,5 +155,7 @@ contract Roullete {
             }
         }
         allGames.pop();
+
+        emit gameEnded();
     }
 }
