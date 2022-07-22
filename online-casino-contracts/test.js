@@ -54,8 +54,33 @@ describe("Roullete Wheel", () => {
     });
   });
 
+  describe("Game Number Chosen", async () => {
+    it("Should correctly choose the number for a joined game", async () => {
+      await roullete.methods.createGame(10, 3).send({
+        from: accounts[0],
+        gas: 200000,
+      });
+
+      await roullete.methods.joinGame().send({
+        from: accounts[1],
+        gas: 200000,
+        value: web3.utils.toWei("0.00002", "ether"),
+      });
+      try {
+        await roullete.methods.chooseNumber(0, 5).send({
+          from: accounts[1],
+          gas: 200000,
+        });
+
+        assert(true);
+      } catch (e) {
+        throw new Error("Could not choose the number");
+      }
+    });
+  });
+
   describe("Game Termination", async () => {
-    it("should end the game if a game is running", async () => {
+    it("Should end the game if a game is running", async () => {
       await roullete.methods.createGame(10, 3).send({
         from: accounts[0],
         gas: 200000,
@@ -67,10 +92,10 @@ describe("Roullete Wheel", () => {
       });
 
       const game = await roullete.methods.fetchGame().call();
-      assert.equal(gameState.ENDED, game.state);
+      assert.equal(gameState.ENDED, game[6]);
     });
 
-    it("should not do anything if game has already ended", async () => {
+    it("Should not do anything if game has already ended or has not started", async () => {
       await roullete.methods.createGame(10, 3).send({
         from: accounts[0],
         gas: 200000,
@@ -109,6 +134,45 @@ describe("Roullete Wheel", () => {
       } catch (e) {
         assert.ok(e);
       }
+    });
+
+    it("Should send the money to the winner after the game ends", async () => {
+      await roullete.methods.createGame(10, 3).send({
+        from: accounts[0],
+        gas: 200000,
+      });
+
+      const initialWei = await web3.eth.getBalance(accounts[1]);
+
+      await Promise.all([
+        roullete.methods.joinGame().send({
+          from: accounts[1],
+          gas: 200000,
+          value: web3.utils.toWei("0.2", "ether"),
+        }),
+        roullete.methods.chooseNumber(0, 3).send({
+          from: accounts[1],
+          gas: 200000,
+        }),
+        roullete.methods.joinGame().send({
+          from: accounts[2],
+          gas: 200000,
+          value: web3.utils.toWei("0.2", "ether"),
+        }),
+        roullete.methods.chooseNumber(0, 5).send({
+          from: accounts[2],
+          gas: 200000,
+        }),
+      ]);
+
+      await roullete.methods.endGame().send({
+        from: accounts[0],
+        gas: 200000,
+      });
+
+      const finalWei = await web3.eth.getBalance(accounts[1]);
+
+      assert(finalWei - initialWei >= web3.utils.toWei("0.19"));
     });
   });
 
@@ -160,6 +224,25 @@ describe("Roullete Wheel", () => {
 
       const game = await roullete.methods.fetchGame().call();
       assert.equal(accounts[1], game[5][0]);
+    });
+
+    it("Should not allow a creator to join his own game", async () => {
+      await roullete.methods.createGame(10, 3).send({
+        from: accounts[0],
+        gas: 200000,
+      });
+
+      try {
+        await roullete.methods.joinGame().send({
+          from: accounts[0],
+          gas: 200000,
+          value: web3.utils.toWei("0.000002", "ether"),
+        });
+
+        throw new Error("Creator allowed to join his own game");
+      } catch (e) {
+        assert.ok(e);
+      }
     });
   });
 });
