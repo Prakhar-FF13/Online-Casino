@@ -21,13 +21,15 @@ contract Roullete {
     }
 
     // events to notify front end to change their ui based on game states.
+    event gameCreated(uint256 gameIdx, uint256 prize, uint256 numb);
     event playerJoined(
         address playerAddress_,
         uint256 playerCount,
         uint32 prize,
-        uint32 numb
+        uint32 numb,
+        uint256 gameIdx
     );
-    event gameEnded();
+    event gameEnded(uint256 gameIdx);
 
     // variables to access games easily.
     mapping(address => Game) ownerToGame;
@@ -47,12 +49,13 @@ contract Roullete {
         g.state = GameState.STARTED;
         g.gameMoney = 0;
         allGames.push(msg.sender);
+        emit gameCreated(allGames.length - 1, g.prize, g.numb);
     }
 
     // randomly join a game which is started.
     function joinGame() public payable {
-        require(allGames.length > 0);
-        require(msg.value >= 0.00001 ether);
+        require(allGames.length > 0, "No games available");
+        require(msg.value >= 0.00001 ether, "Bid too low");
         uint256 gameIdx = 0;
         uint8 tries = 0;
         while (tries < 10) {
@@ -65,6 +68,17 @@ contract Roullete {
         // could not find a game which could be joined return.
         require(tries != 10, "Could not find a game you could join");
         Game storage randGame = ownerToGame[allGames[gameIdx]];
+
+        // do not allow a player to join more than once.
+        bool notPresent = true;
+        for (uint256 i = 0; i < randGame.players.length; i++) {
+            if (msg.sender == randGame.players[i]) {
+                notPresent = false;
+                break;
+            }
+        }
+        require(notPresent == true, "Cannot join the same game twice");
+
         randGame.players.push(msg.sender);
         randGame.playerMoney.push(msg.value);
         randGame.gameMoney += msg.value;
@@ -74,7 +88,8 @@ contract Roullete {
             msg.sender,
             randGame.players.length,
             randGame.prize,
-            randGame.numb
+            randGame.numb,
+            gameIdx
         );
     }
 
@@ -147,8 +162,10 @@ contract Roullete {
         g.state = GameState.ENDED;
 
         // remove from the allGames array so that it does not get picked again.
+        uint256 gameIdx = 1e9;
         for (uint16 i = 0; i < allGames.length; i++) {
             if (allGames[i] == g.createdBy) {
+                gameIdx = i;
                 for (uint16 j = i + 1; j < allGames.length; j++)
                     allGames[j - 1] = allGames[j];
                 break;
@@ -156,6 +173,6 @@ contract Roullete {
         }
         allGames.pop();
 
-        emit gameEnded();
+        emit gameEnded(gameIdx);
     }
 }

@@ -1,13 +1,84 @@
 {
   "Roullete": {
-    "address": "0x03392367b45e0589E188cbE4CC8F81d7CA220558",
+    "address": "0x947DC3fC7405BD7f92509442CA46e8f9E09c34e2",
     "abi": [
       {
         "anonymous": false,
-        "inputs": [],
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "gameIdx",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "prize",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "numb",
+            "type": "uint256"
+          }
+        ],
+        "name": "gameCreated",
+        "type": "event",
+        "signature": "0x400057cfcd7e7498477c13ef8c99b46b668a2104eb061179d96ccdb1ca51e3d6"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "gameIdx",
+            "type": "uint256"
+          }
+        ],
         "name": "gameEnded",
         "type": "event",
-        "signature": "0x2f6fe396039053a4e8f1851fd9b6e9f41e11ab1367c7588fb19fd79bcb37a315"
+        "signature": "0x8b46a6da2109b44521b4bc62c5f90dbf7c48b30e54f5489fb1dfc5308bb21491"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "playerAddress_",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "playerCount",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint32",
+            "name": "prize",
+            "type": "uint32"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint32",
+            "name": "numb",
+            "type": "uint32"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "gameIdx",
+            "type": "uint256"
+          }
+        ],
+        "name": "playerJoined",
+        "type": "event",
+        "signature": "0x8d6b041b18485fef59847624ee29da308c9a530db58aa427ebf209ea203e230d"
       },
       {
         "inputs": [
@@ -104,28 +175,7 @@
       {
         "inputs": [],
         "name": "joinGame",
-        "outputs": [
-          {
-            "internalType": "address",
-            "name": "",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
+        "outputs": [],
         "stateMutability": "payable",
         "type": "function",
         "payable": true,

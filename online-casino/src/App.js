@@ -26,36 +26,98 @@ const Button = styled.button`
   cursor: pointer;
 `;
 
+const roullete = new web3.eth.Contract(
+  contracts.Roullete.abi,
+  contracts.Roullete.address
+);
+
 function App() {
-  const [prize, setPrize] = useState(0);
-  const [numb, setNumb] = useState(20);
-  const [account, setAccount] = useState(null);
-  const [showWheel, setShowWheel] = useState(false);
+  const [state, setState] = useState({});
 
   useEffect(() => {
     web3.eth.getAccounts((err, accounts) => {
       if (err) console.log(err.message);
-      else setAccount(accounts[0]);
+      else
+        setState({
+          numb: 20,
+          prize: 0,
+          account: accounts[0],
+          showWheel: false,
+          gameIdx: -1,
+          playerCount: 0,
+        });
+    });
+
+    roullete.events.gameCreated((err, data) => {
+      if (err) console.log(err.message);
+      else {
+        const gameData = data.returnValues;
+
+        setState((state) => {
+          if (state.gameIdx === -1) {
+            return {
+              ...state,
+              numb: gameData.numb,
+              prize: gameData.prize,
+              showWheel: true,
+              gameIdx: gameData.gameIdx,
+            };
+          } else return state;
+        });
+      }
+    });
+
+    roullete.events.playerJoined((err, data) => {
+      if (err) console.log(err.message);
+      else {
+        const gameData = data.returnValues;
+
+        setState((state) => {
+          if (state.gameIdx === gameData.gameIdx || state.gameIdx === -1)
+            return {
+              ...state,
+              numb: gameData.numb,
+              prize: gameData.prize,
+              showWheel: true,
+              playerCount: gameData.playerCount,
+              gameIdx: gameData.gameIdx,
+            };
+          else return state;
+        });
+      }
+    });
+
+    roullete.events.gameEnded((err, data) => {
+      if (err) console.log(err.message);
+      else {
+        const gameData = data.returnValues;
+
+        setState((state) => {
+          if (state.gameIdx === gameData.gameIdx) {
+            return {
+              ...state,
+              numb: 20,
+              prize: 0,
+              showWheel: false,
+              gameIdx: -1,
+              playerCount: 0,
+            };
+          } else return state;
+        });
+      }
     });
   }, []);
 
-  const roullete = new web3.eth.Contract(
-    contracts.Roullete.abi,
-    contracts.Roullete.address
-  );
-
   const onCreateGame = async () => {
     try {
-      const pz = Math.floor(Math.random() * numb);
-      await roullete.methods.createGame(numb, prize).send({
-        from: account,
+      const pz = Math.floor(Math.random() * state.numb);
+      await roullete.methods.createGame(state.numb, pz).send({
+        from: state.account,
         gas: 200000,
       });
-
-      setPrize(pz);
-      setShowWheel(true);
       console.log("Game Created");
     } catch (e) {
+      console.log(e);
       console.log(e.message);
     }
   };
@@ -63,19 +125,10 @@ function App() {
   const onJoinGame = async () => {
     try {
       await roullete.methods.joinGame().send({
-        from: account,
+        from: state.account,
         gas: 200000,
         value: web3.utils.toWei("0.00002", "ether"),
       });
-
-      /*
-        @TODO get the joined game data.
-      */
-      // const game = await roullete.methods.fetchGame().call();
-      // console.log(game);
-      // setNumb(game[3]);
-      // setPrize(game[2]);
-      // setShowWheel(true);
       console.log("Game Joined");
     } catch (e) {
       console.log(e.message);
@@ -85,7 +138,7 @@ function App() {
   const onCloseGame = async () => {
     try {
       await roullete.methods.endGame().send({
-        from: account,
+        from: state.account,
         gas: 200000,
       });
 
@@ -120,7 +173,9 @@ function App() {
           Close Game
         </Button>
       </ButtonContainer>
-      {showWheel && <CreateRoulleteGame numbers={numb} prizeNumber={prize} />}
+      {state.showWheel && (
+        <CreateRoulleteGame numbers={state.numb} prizeNumber={state.prize} />
+      )}
     </Container>
   );
 }

@@ -244,5 +244,29 @@ describe("Roullete Wheel", () => {
         assert.ok(e);
       }
     });
+
+    it("Should not allow the same player to join twice", async () => {
+      await roullete.methods.createGame(10, 3).send({
+        from: accounts[0],
+        gas: 200000,
+      });
+
+      await roullete.methods.joinGame().send({
+        from: accounts[1],
+        gas: 300000,
+        value: web3.utils.toWei("0.00002", "ether"),
+      });
+
+      try {
+        await roullete.methods.joinGame().send({
+          from: accounts[1],
+          gas: 300000,
+          value: web3.utils.toWei("0.00002", "ether"),
+        });
+        throw new Error("Same player joined twice.");
+      } catch (e) {
+        assert.ok(e);
+      }
+    });
   });
 });
