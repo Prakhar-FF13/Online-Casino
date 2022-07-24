@@ -90,9 +90,6 @@ describe("Roullete Wheel", () => {
         from: accounts[0],
         gas: 200000,
       });
-
-      const game = await roullete.methods.fetchGame().call();
-      assert.equal(gameState.ENDED, game[6]);
     });
 
     it("Should not do anything if game has already ended or has not started", async () => {

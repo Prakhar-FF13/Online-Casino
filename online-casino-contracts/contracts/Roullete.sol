@@ -177,6 +177,7 @@ contract Roullete {
             }
         }
         allGames.pop();
+        delete ownerToGame[msg.sender];
 
         emit gameEnded(gameIdx);
     }
