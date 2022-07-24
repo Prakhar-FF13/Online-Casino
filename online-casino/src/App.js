@@ -68,9 +68,6 @@ function App() {
       else {
         const gameData = data.returnValues;
 
-        console.log(gameData);
-        console.log(state);
-
         setState((state) => {
           if (state.gameIdx === -1) {
             return {
@@ -92,9 +89,6 @@ function App() {
       if (err) console.log(err.message);
       else {
         const gameData = data.returnValues;
-
-        console.log(gameData);
-        console.log(state);
 
         setState((state) => {
           if (state.gameIdx === gameData.gameIdx || state.gameIdx === -1)
@@ -172,6 +166,8 @@ function App() {
           from: state.account,
           gas: 200000,
         });
+
+      console.log("Number Chosen");
     } catch (e) {
       console.log(e);
     }
@@ -238,11 +234,13 @@ function App() {
               min={1}
               max={20}
               value={chosen}
-              onChange={() => {
-                for (let i = 0; i < chosen.length; i++) {
-                  if (!(chosen[i] >= "0" && chosen[i] <= "9")) return;
+              onChange={(e) => {
+                const x = e.target.value;
+                let newX = "";
+                for (let i = 0; i < x.length; i++) {
+                  if (x[i] >= "0" && x[i] <= "9") newX += x[i];
                 }
-                setChosen(chosen);
+                setChosen(newX);
               }}
             />
             <button
