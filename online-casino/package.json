@@ -10,6 +10,7 @@
     "react-custom-roulette": "^1.2.0",
     "react-dom": "^16.3.1",
     "react-scripts": "4.0.3",
+    "react-spinners": "^0.13.3",
     "styled-components": "^5.3.5",
     "web-vitals": "^2.1.4",
     "web3": "^1.7.4"

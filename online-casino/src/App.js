@@ -1,10 +1,16 @@
-import { useEffect } from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { RiseLoader } from "react-spinners";
 import styled from "styled-components";
 import CreateRoulleteGame from "./sections/RoulleteWheel/CreateRoulleteGame";
 import web3 from "./utils/web3";
 
 const contracts = require("./utils/contractsDeployed.json");
+
+const override = {
+  display: "block",
+  margin: "0 auto",
+  borderColor: "red",
+};
 
 const Container = styled.div`
   margin: 0 auto;
@@ -28,6 +34,7 @@ const Button = styled.button`
 
 const GameContainer = styled.div`
   display: flex;
+  margin: 32px;
 `;
 
 const BidNumber = styled.div`
@@ -45,6 +52,7 @@ function App() {
   const [state, setState] = useState({});
   const [chosen, setChosen] = useState("");
   const [bid, setBid] = useState("0.00000");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     web3.eth.getAccounts((err, accounts) => {
@@ -134,53 +142,63 @@ function App() {
 
   const onCreateGame = async () => {
     try {
+      setLoading(true);
       const pz = Math.floor(Math.random() * state.numb);
       await roullete.methods.createGame(state.numb, pz).send({
         from: state.account,
         gas: 200000,
       });
     } catch (e) {
-      console.log(e);
+      console.log(e.receipt);
+    } finally {
+      setLoading(false);
     }
   };
 
   const onJoinGame = async () => {
     try {
+      setLoading(true);
       await roullete.methods.joinGame().send({
         from: state.account,
         gas: 300000,
         value: web3.utils.toWei(bid, "ether"),
       });
-
       console.log("Game Joined");
     } catch (e) {
-      console.log(e);
+      console.log(e.receipt);
+    } finally {
+      setLoading(false);
     }
   };
 
   const onChooseNumber = async () => {
     try {
+      setLoading(true);
       await roullete.methods
         .chooseNumber(state.gameIdx, parseInt(chosen))
         .send({
           from: state.account,
           gas: 200000,
         });
-
       console.log("Number Chosen");
     } catch (e) {
-      console.log(e);
+      console.log(e.receipt);
+    } finally {
+      setLoading(false);
     }
   };
 
   const onCloseGame = async () => {
     try {
+      setLoading(true);
       await roullete.methods.endGame().send({
         from: state.account,
         gas: 200000,
       });
     } catch (e) {
-      console.log(e);
+      console.log(e.receipt);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -195,12 +213,13 @@ function App() {
         >
           Create Game
         </Button>
-        <div>
+        <div style={{ display: "flex", flex: 2 }}>
           <input
             type="number"
             min={1}
             max={20}
             value={bid}
+            style={{ flex: 1 }}
             onChange={(e) => {
               const x = e.target.value;
               let newx = "";
@@ -211,6 +230,7 @@ function App() {
             }}
           />
           <Button
+            style={{ flex: 2 }}
             onClick={() => {
               onJoinGame();
             }}
@@ -218,16 +238,24 @@ function App() {
             Join Game
           </Button>
         </div>
-        <Button
-          onClick={() => {
-            onCloseGame();
-          }}
-        >
-          Close Game
-        </Button>
+        {state.account === state.createdBy && (
+          <Button
+            onClick={() => {
+              onCloseGame();
+            }}
+          >
+            Close Game
+          </Button>
+        )}
       </ButtonContainer>
       <GameContainer>
-        {state.showWheel && state.createdBy !== state.account && (
+        <RiseLoader
+          loading={loading}
+          cssOverride={override}
+          size={15}
+          margin={16}
+        />
+        {!loading && state.showWheel && state.createdBy !== state.account && (
           <BidNumber>
             <input
               type="number"
@@ -252,7 +280,7 @@ function App() {
             </button>
           </BidNumber>
         )}
-        {state.showWheel && (
+        {!loading && state.showWheel && (
           <CreateRoulleteGame
             numbers={state.numb}
             prizeNumber={state.prize}
