@@ -268,5 +268,28 @@ describe("Roullete Wheel", () => {
         assert.ok(e);
       }
     });
+
+    it("Should allow multiple players to join", async () => {
+      try {
+        await roullete.methods.createGame(10, 3).send({
+          from: accounts[0],
+          gas: 200000,
+        });
+
+        await roullete.methods.joinGame().send({
+          from: accounts[1],
+          gas: 300000,
+          value: web3.utils.toWei("0.00002", "ether"),
+        });
+
+        await roullete.methods.joinGame().send({
+          from: accounts[2],
+          gas: 300000,
+          value: web3.utils.toWei("0.00002", "ether"),
+        });
+      } catch (e) {
+        throw new Error("Multiple players could not join");
+      }
+    });
   });
 });

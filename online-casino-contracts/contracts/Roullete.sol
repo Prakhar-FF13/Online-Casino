@@ -21,7 +21,12 @@ contract Roullete {
     }
 
     // events to notify front end to change their ui based on game states.
-    event gameCreated(uint256 gameIdx, uint256 prize, uint256 numb);
+    event gameCreated(
+        uint256 gameIdx,
+        uint256 prize,
+        uint256 numb,
+        address createdBy
+    );
     event playerJoined(
         address playerAddress_,
         uint256 playerCount,
@@ -49,7 +54,7 @@ contract Roullete {
         g.state = GameState.STARTED;
         g.gameMoney = 0;
         allGames.push(msg.sender);
-        emit gameCreated(allGames.length - 1, g.prize, g.numb);
+        emit gameCreated(allGames.length - 1, g.prize, g.numb, msg.sender);
     }
 
     // randomly join a game which is started.
