@@ -26,6 +26,16 @@ const Button = styled.button`
   cursor: pointer;
 `;
 
+const GameContainer = styled.div`
+  display: flex;
+`;
+
+const BidNumber = styled.div`
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+`;
+
 const roullete = new web3.eth.Contract(
   contracts.Roullete.abi,
   contracts.Roullete.address
@@ -33,11 +43,13 @@ const roullete = new web3.eth.Contract(
 
 function App() {
   const [state, setState] = useState({});
+  const [chosen, setChosen] = useState("");
+  const [bid, setBid] = useState("0.00000");
 
   useEffect(() => {
     web3.eth.getAccounts((err, accounts) => {
       if (err) console.log(err.message);
-      else
+      else {
         setState({
           numb: 20,
           prize: 0,
@@ -45,7 +57,10 @@ function App() {
           showWheel: false,
           gameIdx: -1,
           playerCount: 0,
+          showSpinner: false,
+          createdBy: null,
         });
+      }
     });
 
     roullete.events.gameCreated((err, data) => {
@@ -61,9 +76,12 @@ function App() {
               prize: gameData.prize,
               showWheel: true,
               gameIdx: gameData.gameIdx,
+              createdBy: gameData.createdBy,
             };
           } else return state;
         });
+
+        console.log("Game Created");
       }
     });
 
@@ -84,6 +102,8 @@ function App() {
             };
           else return state;
         });
+
+        console.log("Player Joined");
       }
     });
 
@@ -99,11 +119,15 @@ function App() {
               numb: 20,
               prize: 0,
               showWheel: false,
+              showSpinner: false,
               gameIdx: -1,
               playerCount: 0,
+              createdBy: null,
             };
           } else return state;
         });
+
+        console.log("Game Ended");
       }
     });
   }, []);
@@ -115,10 +139,8 @@ function App() {
         from: state.account,
         gas: 200000,
       });
-      console.log("Game Created");
     } catch (e) {
       console.log(e);
-      console.log(e.message);
     }
   };
 
@@ -126,12 +148,28 @@ function App() {
     try {
       await roullete.methods.joinGame().send({
         from: state.account,
-        gas: 200000,
-        value: web3.utils.toWei("0.00002", "ether"),
+        gas: 300000,
+        value: web3.utils.toWei(bid, "ether"),
       });
+
       console.log("Game Joined");
     } catch (e) {
-      console.log(e.message);
+      console.log(e);
+    }
+  };
+
+  const onChooseNumber = async () => {
+    try {
+      await roullete.methods
+        .chooseNumber(state.gameIdx, parseInt(chosen))
+        .send({
+          from: state.account,
+          gas: 200000,
+        });
+
+      console.log("Number Chosen");
+    } catch (e) {
+      console.log(e);
     }
   };
 
@@ -141,10 +179,8 @@ function App() {
         from: state.account,
         gas: 200000,
       });
-
-      console.log("Game ended");
     } catch (e) {
-      console.log(e.message);
+      console.log(e);
     }
   };
 
@@ -152,19 +188,36 @@ function App() {
     <Container>
       <ButtonContainer>
         <Button
+          disabled={state.showWheel || state.showSpinner}
           onClick={() => {
             onCreateGame();
           }}
         >
           Create Game
         </Button>
-        <Button
-          onClick={() => {
-            onJoinGame();
-          }}
-        >
-          Join Game
-        </Button>
+        <div>
+          <input
+            type="number"
+            min={1}
+            max={20}
+            value={bid}
+            onChange={(e) => {
+              const x = e.target.value;
+              let newx = "";
+              for (let i = 0; i < x.length; i++) {
+                if ((x[i] >= "0" && x[i] <= "9") || x[i] === ".") newx += x[i];
+              }
+              setBid(newx);
+            }}
+          />
+          <Button
+            onClick={() => {
+              onJoinGame();
+            }}
+          >
+            Join Game
+          </Button>
+        </div>
         <Button
           onClick={() => {
             onCloseGame();
@@ -173,9 +226,44 @@ function App() {
           Close Game
         </Button>
       </ButtonContainer>
-      {state.showWheel && (
-        <CreateRoulleteGame numbers={state.numb} prizeNumber={state.prize} />
-      )}
+      <GameContainer>
+        {state.showWheel && state.createdBy !== state.account && (
+          <BidNumber>
+            <input
+              type="number"
+              min={1}
+              max={20}
+              value={chosen}
+              onChange={(e) => {
+                const x = e.target.value;
+                let newX = "";
+                for (let i = 0; i < x.length; i++) {
+                  if (x[i] >= "0" && x[i] <= "9") newX += x[i];
+                }
+                setChosen(newX);
+              }}
+            />
+            <button
+              onClick={() => {
+                onChooseNumber();
+              }}
+            >
+              Choose Number to Bid On
+            </button>
+          </BidNumber>
+        )}
+        {state.showWheel && (
+          <CreateRoulleteGame
+            numbers={state.numb}
+            prizeNumber={state.prize}
+            style={{
+              flex: 1,
+              "align-items": "center",
+              "justify-content": "center",
+            }}
+          />
+        )}
+      </GameContainer>
     </Container>
   );
 }
