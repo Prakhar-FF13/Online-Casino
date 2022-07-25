@@ -38,29 +38,57 @@ contract Roullete {
 
     // variables to access games easily.
     mapping(address => Game) ownerToGame;
+    mapping(address => address) joinedGame;
     address[] private allGames;
 
     // this function creates a game for a player.
     function createGame(uint32 _numb, uint32 _prize) public {
-        // only create the game if no simultaneous game is not running.
-        require(
-            ownerToGame[msg.sender].state != GameState.STARTED,
-            "A game is already running"
-        );
-        Game storage g = ownerToGame[msg.sender];
-        g.createdBy = msg.sender;
-        g.numb = _numb;
-        g.prize = _prize;
-        g.state = GameState.STARTED;
-        g.gameMoney = 0;
-        allGames.push(msg.sender);
-        emit gameCreated(allGames.length - 1, g.prize, g.numb, msg.sender);
+        if (ownerToGame[msg.sender].state == GameState.STARTED) {
+            emit gameCreated(
+                allGames.length - 1,
+                ownerToGame[msg.sender].prize,
+                ownerToGame[msg.sender].numb,
+                msg.sender
+            );
+        } else {
+            Game storage g = ownerToGame[msg.sender];
+            g.createdBy = msg.sender;
+            g.numb = _numb;
+            g.prize = _prize;
+            g.state = GameState.STARTED;
+            g.gameMoney = 0;
+            allGames.push(msg.sender);
+            emit gameCreated(allGames.length - 1, g.prize, g.numb, msg.sender);
+        }
     }
 
     // randomly join a game which is started.
     function joinGame() public payable {
         require(allGames.length > 0, "No games available");
         require(msg.value >= 0.00001 ether, "Bid too low");
+
+        if (
+            ownerToGame[joinedGame[msg.sender]].state == GameState.STARTED &&
+            ownerToGame[joinedGame[msg.sender]].createdBy ==
+            joinedGame[msg.sender]
+        ) {
+            uint256 gdx = 0;
+            for (uint256 i = 0; i < allGames.length; i++) {
+                if (joinedGame[msg.sender] == allGames[i]) {
+                    gdx = i;
+                    break;
+                }
+            }
+            emit playerJoined(
+                msg.sender,
+                ownerToGame[joinedGame[msg.sender]].players.length,
+                ownerToGame[joinedGame[msg.sender]].prize,
+                ownerToGame[joinedGame[msg.sender]].numb,
+                gdx
+            );
+            return;
+        }
+
         uint256 gameIdx = 0;
         uint8 tries = 0;
         while (tries < 10) {
@@ -74,19 +102,12 @@ contract Roullete {
         require(tries != 10, "Could not find a game you could join");
         Game storage randGame = ownerToGame[allGames[gameIdx]];
 
-        // do not allow a player to join more than once.
-        bool notPresent = true;
-        for (uint256 i = 0; i < randGame.players.length; i++) {
-            if (msg.sender == randGame.players[i]) {
-                notPresent = false;
-                break;
-            }
-        }
-        require(notPresent == true, "Cannot join the same game twice");
-
         randGame.players.push(msg.sender);
         randGame.playerMoney.push(msg.value);
         randGame.gameMoney += msg.value;
+
+        // store that this player has joined this game.
+        joinedGame[msg.sender] = randGame.createdBy;
 
         // notify the ui about joined game.
         emit playerJoined(

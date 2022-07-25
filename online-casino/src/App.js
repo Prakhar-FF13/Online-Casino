@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { ReactNotifications, Store } from "react-notifications-component";
+import "react-notifications-component/dist/theme.css";
 import { RiseLoader } from "react-spinners";
 import styled from "styled-components";
 import CreateRoulleteGame from "./sections/RoulleteWheel/CreateRoulleteGame";
@@ -99,7 +101,22 @@ function App() {
         const gameData = data.returnValues;
 
         setState((state) => {
-          if (state.gameIdx === gameData.gameIdx || state.gameIdx === -1)
+          if (state.gameIdx === gameData.gameIdx || state.gameIdx === -1) {
+            if (state.gameIdx !== -1)
+              Store.addNotification({
+                title: "Another player has joined the game",
+                message: `Total players: ${gameData.playerCount}`,
+                type: "success",
+                insert: "top",
+                container: "top-right",
+                animationIn: ["animate__animated", "animate__fadeIn"],
+                animationOut: ["animate__animated", "animate__fadeOut"],
+                dismiss: {
+                  duration: 5000,
+                  onScreen: true,
+                },
+              });
+
             return {
               ...state,
               numb: gameData.numb,
@@ -108,7 +125,7 @@ function App() {
               playerCount: gameData.playerCount,
               gameIdx: gameData.gameIdx,
             };
-          else return state;
+          } else return state;
         });
 
         console.log("Player Joined");
@@ -122,6 +139,20 @@ function App() {
 
         setState((state) => {
           if (state.gameIdx === gameData.gameIdx) {
+            Store.addNotification({
+              title: "Game has Finished",
+              message: `Winner has been paid. Winning Number - ${state.prize}`,
+              type: "success",
+              insert: "top",
+              container: "top-right",
+              animationIn: ["animate__animated", "animate__fadeIn"],
+              animationOut: ["animate__animated", "animate__fadeOut"],
+              dismiss: {
+                duration: 5000,
+                onScreen: true,
+              },
+            });
+
             return {
               ...state,
               numb: 20,
@@ -143,13 +174,40 @@ function App() {
   const onCreateGame = async () => {
     try {
       setLoading(true);
-      const pz = Math.floor(Math.random() * state.numb);
+      const pz = Math.floor(Math.random() * state.numb) + 1;
       await roullete.methods.createGame(state.numb, pz).send({
         from: state.account,
         gas: 200000,
       });
+
+      Store.addNotification({
+        title: "Game Created",
+        type: "success",
+        insert: "top",
+        container: "top-right",
+        animationIn: ["animate__animated", "animate__fadeIn"],
+        animationOut: ["animate__animated", "animate__fadeOut"],
+        dismiss: {
+          duration: 5000,
+          onScreen: true,
+        },
+      });
     } catch (e) {
       console.log(e.receipt);
+      Store.addNotification({
+        title: "Something went wrong while creating the contract.",
+        message:
+          "Possible reasons - 1. MetaMask not connected 2. Game already running",
+        type: "danger",
+        insert: "top",
+        container: "top-right",
+        animationIn: ["animate__animated", "animate__fadeIn"],
+        animationOut: ["animate__animated", "animate__fadeOut"],
+        dismiss: {
+          duration: 5000,
+          onScreen: true,
+        },
+      });
     } finally {
       setLoading(false);
     }
@@ -166,6 +224,19 @@ function App() {
       console.log("Game Joined");
     } catch (e) {
       console.log(e.receipt);
+      Store.addNotification({
+        title: "Something went wrong while joining the game.",
+        message: "Possible reasons - 1. Bid too low 2. Games not available",
+        type: "danger",
+        insert: "top",
+        container: "top-right",
+        animationIn: ["animate__animated", "animate__fadeIn"],
+        animationOut: ["animate__animated", "animate__fadeOut"],
+        dismiss: {
+          duration: 5000,
+          onScreen: true,
+        },
+      });
     } finally {
       setLoading(false);
     }
@@ -180,9 +251,35 @@ function App() {
           from: state.account,
           gas: 200000,
         });
+
+      Store.addNotification({
+        title: "Successfully Chosen the number",
+        type: "success",
+        insert: "top",
+        container: "top-right",
+        animationIn: ["animate__animated", "animate__fadeIn"],
+        animationOut: ["animate__animated", "animate__fadeOut"],
+        dismiss: {
+          duration: 5000,
+          onScreen: true,
+        },
+      });
       console.log("Number Chosen");
     } catch (e) {
       console.log(e.receipt);
+      Store.addNotification({
+        title: "Something went wrong while selecting the number.",
+        message: "Possible reasons - 1. Game ended 2. Game not started",
+        type: "danger",
+        insert: "top",
+        container: "top-right",
+        animationIn: ["animate__animated", "animate__fadeIn"],
+        animationOut: ["animate__animated", "animate__fadeOut"],
+        dismiss: {
+          duration: 5000,
+          onScreen: true,
+        },
+      });
     } finally {
       setLoading(false);
     }
@@ -197,48 +294,64 @@ function App() {
       });
     } catch (e) {
       console.log(e.receipt);
+      Store.addNotification({
+        title: "Something went wrong while finishing the game.",
+        message:
+          "Possible reasons - 1. Game already ended. 2. No game created by you.",
+        type: "danger",
+        insert: "top",
+        container: "top-right",
+        animationIn: ["animate__animated", "animate__fadeIn"],
+        animationOut: ["animate__animated", "animate__fadeOut"],
+        dismiss: {
+          duration: 5000,
+          onScreen: true,
+        },
+      });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Container>
-      <ButtonContainer>
-        <Button
-          disabled={state.showWheel || state.showSpinner}
-          onClick={() => {
-            onCreateGame();
-          }}
-        >
-          Create Game
-        </Button>
-        <div style={{ display: "flex", flex: 2 }}>
-          <input
-            type="number"
-            min={1}
-            max={20}
-            value={bid}
-            style={{ flex: 1 }}
-            onChange={(e) => {
-              const x = e.target.value;
-              let newx = "";
-              for (let i = 0; i < x.length; i++) {
-                if ((x[i] >= "0" && x[i] <= "9") || x[i] === ".") newx += x[i];
-              }
-              setBid(newx);
-            }}
-          />
+    <>
+      <ReactNotifications />
+      <Container>
+        <ButtonContainer>
           <Button
-            style={{ flex: 2 }}
+            disabled={state.showWheel || state.showSpinner}
             onClick={() => {
-              onJoinGame();
+              onCreateGame();
             }}
           >
-            Join Game
+            Create Game
           </Button>
-        </div>
-        {state.account === state.createdBy && (
+          <div style={{ display: "flex", flex: 2 }}>
+            <input
+              type="number"
+              min={1}
+              max={20}
+              value={bid}
+              style={{ flex: 1 }}
+              onChange={(e) => {
+                const x = e.target.value;
+                let newx = "";
+                for (let i = 0; i < x.length; i++) {
+                  if ((x[i] >= "0" && x[i] <= "9") || x[i] === ".")
+                    newx += x[i];
+                }
+                setBid(newx);
+              }}
+            />
+            <Button
+              style={{ flex: 2 }}
+              onClick={() => {
+                onJoinGame();
+              }}
+            >
+              Join Game
+            </Button>
+          </div>
           <Button
             onClick={() => {
               onCloseGame();
@@ -246,53 +359,53 @@ function App() {
           >
             Close Game
           </Button>
-        )}
-      </ButtonContainer>
-      <GameContainer>
-        <RiseLoader
-          loading={loading}
-          cssOverride={override}
-          size={15}
-          margin={16}
-        />
-        {!loading && state.showWheel && state.createdBy !== state.account && (
-          <BidNumber>
-            <input
-              type="number"
-              min={1}
-              max={20}
-              value={chosen}
-              onChange={(e) => {
-                const x = e.target.value;
-                let newX = "";
-                for (let i = 0; i < x.length; i++) {
-                  if (x[i] >= "0" && x[i] <= "9") newX += x[i];
-                }
-                setChosen(newX);
+        </ButtonContainer>
+        <GameContainer>
+          <RiseLoader
+            loading={loading}
+            cssOverride={override}
+            size={15}
+            margin={16}
+          />
+          {!loading && state.showWheel && state.createdBy !== state.account && (
+            <BidNumber>
+              <input
+                type="number"
+                min={1}
+                max={20}
+                value={chosen}
+                onChange={(e) => {
+                  const x = e.target.value;
+                  let newX = "";
+                  for (let i = 0; i < x.length; i++) {
+                    if (x[i] >= "0" && x[i] <= "9") newX += x[i];
+                  }
+                  setChosen(newX);
+                }}
+              />
+              <Button
+                onClick={() => {
+                  onChooseNumber();
+                }}
+              >
+                Choose Number to Bid On
+              </Button>
+            </BidNumber>
+          )}
+          {!loading && state.showWheel && (
+            <CreateRoulleteGame
+              numbers={state.numb}
+              prizeNumber={state.prize}
+              style={{
+                flex: 1,
+                "align-items": "center",
+                "justify-content": "center",
               }}
             />
-            <button
-              onClick={() => {
-                onChooseNumber();
-              }}
-            >
-              Choose Number to Bid On
-            </button>
-          </BidNumber>
-        )}
-        {!loading && state.showWheel && (
-          <CreateRoulleteGame
-            numbers={state.numb}
-            prizeNumber={state.prize}
-            style={{
-              flex: 1,
-              "align-items": "center",
-              "justify-content": "center",
-            }}
-          />
-        )}
-      </GameContainer>
-    </Container>
+          )}
+        </GameContainer>
+      </Container>
+    </>
   );
 }
 
