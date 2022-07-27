@@ -8,6 +8,8 @@ contract Roullete {
         ENDED
     }
 
+    uint256 randNonce = 0;
+
     // variables which define a game.
     struct Game {
         address createdBy; // game creator address.
@@ -44,8 +46,16 @@ contract Roullete {
     // this function creates a game for a player.
     function createGame(uint32 _numb, uint32 _prize) public {
         if (ownerToGame[msg.sender].state == GameState.STARTED) {
+            uint256 gdx = 0;
+            for (uint256 i = 0; i < allGames.length; i++) {
+                if (msg.sender == allGames[i]) {
+                    gdx = i;
+                    break;
+                }
+            }
+
             emit gameCreated(
-                allGames.length - 1,
+                gdx,
                 ownerToGame[msg.sender].prize,
                 ownerToGame[msg.sender].numb,
                 msg.sender
@@ -93,10 +103,16 @@ contract Roullete {
         uint8 tries = 0;
         while (tries < 10) {
             gameIdx =
-                uint256(keccak256(abi.encode(block.timestamp, msg.sender))) %
+                uint256(
+                    keccak256(
+                        abi.encodePacked(block.timestamp, msg.sender, randNonce)
+                    )
+                ) %
                 allGames.length;
             if (ownerToGame[allGames[gameIdx]].createdBy != msg.sender) break;
             tries += 1;
+
+            randNonce++;
         }
         // could not find a game which could be joined return.
         require(tries != 10, "Could not find a game you could join");

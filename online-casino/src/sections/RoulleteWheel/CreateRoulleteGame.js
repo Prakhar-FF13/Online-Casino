@@ -1,8 +1,8 @@
 import RoulleteWheel from "./RoulleteWheel";
 
-const CreateRoulleteGame = ({ numbers = 20, prizeNumber = null }) => {
+const CreateRoulleteGame = ({ numbers = 20, prizeNumber = null, mustSpin }) => {
   let data = [];
-  for (let i = 1; i <= numbers; i++) {
+  for (let i = 0; i < numbers; i++) {
     data.push({
       option: `${i}`,
     });
@@ -12,7 +12,9 @@ const CreateRoulleteGame = ({ numbers = 20, prizeNumber = null }) => {
     ? prizeNumber
     : Math.floor(Math.random() * data.length);
 
-  return <RoulleteWheel data={data} prizeNumber={prizeNumber} />;
+  return (
+    <RoulleteWheel data={data} prizeNumber={prizeNumber} mustSpin={mustSpin} />
+  );
 };
 
 export default CreateRoulleteGame;

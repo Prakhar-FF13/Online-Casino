@@ -69,6 +69,7 @@ function App() {
           playerCount: 0,
           showSpinner: false,
           createdBy: null,
+          mustSpin: false,
         });
       }
     });
@@ -137,31 +138,47 @@ function App() {
       else {
         const gameData = data.returnValues;
 
+        setTimeout(() => {
+          setState((state) => {
+            if (state.gameIdx === gameData.gameIdx) {
+              Store.addNotification({
+                title: "Game has Finished",
+                message: `Winner has been paid. Winning Number - ${state.prize}`,
+                type: "success",
+                insert: "top",
+                container: "top-right",
+                animationIn: ["animate__animated", "animate__fadeIn"],
+                animationOut: ["animate__animated", "animate__fadeOut"],
+                dismiss: {
+                  duration: 5000,
+                  onScreen: true,
+                },
+              });
+
+              console.log(state);
+
+              return {
+                ...state,
+                numb: 20,
+                prize: 0,
+                showWheel: false,
+                showSpinner: false,
+                gameIdx: -1,
+                playerCount: 0,
+                createdBy: null,
+                mustSpin: false,
+              };
+            } else return state;
+          });
+        }, 5000);
+
         setState((state) => {
           if (state.gameIdx === gameData.gameIdx) {
-            Store.addNotification({
-              title: "Game has Finished",
-              message: `Winner has been paid. Winning Number - ${state.prize}`,
-              type: "success",
-              insert: "top",
-              container: "top-right",
-              animationIn: ["animate__animated", "animate__fadeIn"],
-              animationOut: ["animate__animated", "animate__fadeOut"],
-              dismiss: {
-                duration: 5000,
-                onScreen: true,
-              },
-            });
-
+            console.log(state);
             return {
               ...state,
-              numb: 20,
-              prize: 0,
-              showWheel: false,
-              showSpinner: false,
-              gameIdx: -1,
-              playerCount: 0,
-              createdBy: null,
+              showWheel: true,
+              mustSpin: true,
             };
           } else return state;
         });
@@ -401,6 +418,7 @@ function App() {
                 "align-items": "center",
                 "justify-content": "center",
               }}
+              mustSpin={state.mustSpin}
             />
           )}
         </GameContainer>

@@ -194,18 +194,20 @@ describe("Roullete Wheel", () => {
 
     it("Should join the game if a game is available", async () => {
       await roullete.methods.createGame(10, 3).send({
-        from: accounts[0],
+        from: accounts[1],
         gas: 300000,
       });
 
       await roullete.methods.joinGame().send({
-        from: accounts[1],
+        from: accounts[0],
         gas: 300000,
         value: web3.utils.toWei("0.00002", "ether"),
       });
 
-      const game = await roullete.methods.fetchGame().call();
-      assert.equal(accounts[1], game[5][0]);
+      const game = await roullete.methods
+        .fetchGame()
+        .call({ from: accounts[1] });
+      assert.equal(accounts[0], game[5][0]);
     });
 
     it("Should not allow a creator to join his own game", async () => {

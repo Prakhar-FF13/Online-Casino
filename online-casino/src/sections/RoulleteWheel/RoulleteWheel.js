@@ -1,12 +1,7 @@
-import { useState } from "react";
 import { Wheel } from "react-custom-roulette";
 
-const RoulleteWheel = ({ data, prizeNumber }) => {
-  const [mustSpin, setMustSpin] = useState(false);
-
-  const handleSpinClick = () => {
-    setMustSpin(true);
-  };
+const RoulleteWheel = ({ data, prizeNumber, mustSpin }) => {
+  console.log(prizeNumber);
 
   return (
     <>
@@ -14,11 +9,8 @@ const RoulleteWheel = ({ data, prizeNumber }) => {
         mustStartSpinning={mustSpin}
         prizeNumber={prizeNumber}
         data={data}
-        onStopSpinning={() => {
-          setMustSpin(false);
-        }}
+        spinDuration={0.2}
       />
-      <button onClick={handleSpinClick}>Spin</button>
     </>
   );
 };
