@@ -253,3 +253,73 @@ describe("Roullete Wheel", () => {
     });
   });
 });
+
+describe("Casino War", () => {
+  let accounts, war;
+  const gameState = {
+    NOTSTARTED: 0,
+    STARTED: 1,
+    ENDED: 2,
+  };
+
+  beforeEach(async () => {
+    accounts = await web3.eth.getAccounts();
+    war = await new web3.eth.Contract(contracts.WarGame.abi)
+      .deploy({
+        data: "0x" + contracts.WarGame.bytecode,
+      })
+      .send({ from: accounts[0], gas: 3000000 });
+
+    assert.ok(war["_address"]);
+  });
+
+  describe("Game Creation", async () => {
+    it("Should create the game", async () => {
+      await war.methods.createGame().send({
+        from: accounts[0],
+        gas: 2000000,
+      });
+
+      const res = await war.methods.fetchCreatedGame().call({
+        from: accounts[0],
+        gas: 2000000,
+      });
+
+      assert.equal(gameState.STARTED, res[4]);
+    });
+
+    it("Should return NOTSTARTED as state if game is not created", async () => {
+      const res = await war.methods
+        .fetchCreatedGame()
+        .call({ from: accounts[0], gas: 2000000 });
+
+      assert.equal(gameState.NOTSTARTED, res[4]);
+    });
+
+    it("Should not create a new game if a game is already running", async () => {
+      await war.methods.createGame().send({
+        from: accounts[0],
+        gas: 2000000,
+      });
+
+      let res = await war.methods.fetchCreatedGame().call({
+        from: accounts[0],
+        gas: 2000000,
+      });
+
+      const gameIdx = res[0];
+
+      await war.methods.createGame().send({
+        from: accounts[0],
+        gas: 2000000,
+      });
+
+      res = await war.methods.fetchCreatedGame().call({
+        from: accounts[0],
+        gas: 2000000,
+      });
+
+      assert.equal(gameIdx, res[0]);
+    });
+  });
+});
