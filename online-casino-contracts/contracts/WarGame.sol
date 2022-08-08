@@ -188,4 +188,84 @@ contract WarGame {
             }
         }
     }
+
+    // for comparing cards
+    bytes32 A = keccak256(abi.encodePacked("A"));
+    bytes32 K = keccak256(abi.encodePacked("K"));
+    bytes32 Q = keccak256(abi.encodePacked("Q"));
+    bytes32 J = keccak256(abi.encodePacked("J"));
+    bytes32 two = keccak256(abi.encodePacked("2"));
+    bytes32 three = keccak256(abi.encodePacked("3"));
+    bytes32 four = keccak256(abi.encodePacked("4"));
+    bytes32 five = keccak256(abi.encodePacked("5"));
+    bytes32 six = keccak256(abi.encodePacked("6"));
+    bytes32 seven = keccak256(abi.encodePacked("7"));
+    bytes32 eight = keccak256(abi.encodePacked("8"));
+    bytes32 nine = keccak256(abi.encodePacked("9"));
+
+    function getFirstChar(string memory _originString)
+        public
+        pure
+        returns (string memory _firstChar)
+    {
+        bytes memory firstCharByte = new bytes(1);
+        firstCharByte[0] = bytes(_originString)[0];
+        return string(firstCharByte);
+    }
+
+    // returns true if card x > card y.
+    function compareCard(string memory p, string memory q)
+        private
+        view
+        returns (bool)
+    {
+        bytes32 x = keccak256(abi.encodePacked(getFirstChar(p)));
+        bytes32 y = keccak256(abi.encodePacked(getFirstChar(q)));
+
+        // x is Ace(A), y can be anything. x wins.
+        if (x == A) return true;
+
+        // x is King(K), x wins if y isn't an Ace(A)
+        if (x == K) return y != A;
+
+        // x is Queen(Q), x wins if y isn't Ace(A) or King(K).
+        if (x == Q) return (y != A && y != K);
+
+        // x is J, x wins if y isn't Ace(A) or King(K) or Queen(Q).
+        if (x == J) return (y != A && y != K && y != Q);
+
+        // y is Ace(A), x can be anything. y wins.
+        if (y == A) return false;
+
+        // y is King(K), y wins if x isn't an Ace(A)
+        if (y == K) return x == A;
+
+        // y is Queen(Q), y wins if x isn't Ace(A) or King(K).
+        if (y == Q) return (x == A || x == K);
+
+        // y is J, y wins if x isn't Ace(A) or King(K) or Queen(Q).
+        if (y == J) return (x == A || x == K || x == Q);
+
+        return x >= y;
+    }
+
+    function playRound(string[] memory cards) public payable {
+        Game storage game = ownerToGame[msg.sender];
+        require(
+            game.state == GameState.STARTED,
+            "Start a game to start the round"
+        );
+        for (uint16 i = 0; i < game.players.length; i++) {
+            game.playerCards[i] = cards[i];
+        }
+        emit GameInfo(
+            game.gameIdx,
+            game.createdBy,
+            game.players,
+            game.playerBids,
+            game.playerCards
+        );
+        string memory dealerCard = cards[cards.length - 1];
+        for (uint16 i = 0; i < game.players.length; i++) {}
+    }
 }
