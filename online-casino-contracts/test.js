@@ -322,4 +322,138 @@ describe("Casino War", () => {
       assert.equal(gameIdx, res[0]);
     });
   });
+  describe("Game Joining", async () => {
+    it("Should not join the game if no game is available", async () => {
+      try {
+        await war.methods.joinGame().send({
+          from: accounts[0],
+          gas: 200000,
+        });
+      } catch (e) {
+        assert.equal("No games available", e.results[e.hashes[0]].reason);
+      }
+    });
+
+    it("Should join the game if game is available", async () => {
+      await war.methods.createGame().send({
+        from: accounts[0],
+        gas: 200000,
+      });
+
+      await war.methods.joinGame().send({
+        from: accounts[1],
+        gas: 200000,
+      });
+
+      let res = await war.methods.fetchCreatedGame().call({
+        from: accounts[0],
+        gas: 200000,
+      });
+
+      assert.equal(accounts[1], res[2][0]);
+
+      res = await war.methods.fetchJoinedGame().call({
+        from: accounts[1],
+        gas: 200000,
+      });
+
+      assert.equal(accounts[0], res[1]);
+    });
+
+    it("Should not join a new game if previously joined game is already running", async () => {
+      await war.methods.createGame().send({
+        from: accounts[0],
+        gas: 200000,
+      });
+
+      await war.methods.joinGame().send({
+        from: accounts[1],
+        gas: 200000,
+      });
+
+      let res = await war.methods.fetchJoinedGame().call({
+        from: accounts[1],
+        gas: 200000,
+      });
+      const gameCreator = res[1];
+
+      await war.methods.createGame().send({
+        from: accounts[2],
+        gas: 200000,
+      });
+
+      await war.methods.createGame().send({
+        from: accounts[3],
+        gas: 200000,
+      });
+
+      await war.methods.createGame().send({
+        from: accounts[4],
+        gas: 200000,
+      });
+
+      await war.methods.joinGame().send({
+        from: accounts[1],
+        gas: 200000,
+      });
+
+      res = await war.methods.fetchJoinedGame().call({
+        from: accounts[1],
+        gas: 200000,
+      });
+
+      assert.equal(gameCreator, res[1]);
+    });
+
+    it("Should not allow a game dealer to participate as a player", async () => {
+      await war.methods.createGame().send({
+        from: accounts[0],
+        gas: 200000,
+      });
+
+      try {
+        await war.methods.joinGame().send({
+          from: accounts[0],
+          gas: 200000,
+        });
+      } catch (e) {
+        assert.equal(
+          "Could not find a game you could join",
+          e.results[e.hashes[0]].reason
+        );
+      }
+    });
+
+    it("Should allow multiple players to join the game", async () => {
+      await war.methods.createGame().send({
+        from: accounts[0],
+        gas: 200000,
+      });
+
+      await war.methods.joinGame().send({
+        from: accounts[1],
+        gas: 200000,
+      });
+
+      await war.methods.joinGame().send({
+        from: accounts[2],
+        gas: 200000,
+      });
+
+      await war.methods.joinGame().send({
+        from: accounts[3],
+        gas: 200000,
+      });
+
+      const res = await war.methods.fetchCreatedGame().call({
+        from: accounts[0],
+        gas: 200000,
+      });
+
+      assert.equal(3, res[2].length);
+      assert.equal(accounts[1], res[2][0]);
+      assert.equal(accounts[2], res[2][1]);
+      assert.equal(accounts[3], res[2][2]);
+    });
+  });
 });

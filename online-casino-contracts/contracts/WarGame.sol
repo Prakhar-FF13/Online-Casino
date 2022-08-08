@@ -107,5 +107,59 @@ contract WarGame {
         );
     }
 
-    function joinGame() public {}
+    function joinGame() public {
+        require(allGames.length > 0, "No games available");
+        if (
+            ownerToGame[joinedGame[msg.sender]].state == GameState.STARTED &&
+            ownerToGame[joinedGame[msg.sender]].createdBy ==
+            joinedGame[msg.sender]
+        ) {
+            emit GameInfo(
+                ownerToGame[joinedGame[msg.sender]].gameIdx,
+                ownerToGame[joinedGame[msg.sender]].createdBy,
+                ownerToGame[joinedGame[msg.sender]].players,
+                ownerToGame[joinedGame[msg.sender]].playerBids,
+                ownerToGame[joinedGame[msg.sender]].playerCards
+            );
+        } else {
+            uint256 gameIdx = 0;
+            uint8 tries = 0;
+            while (tries < 10) {
+                gameIdx =
+                    uint256(
+                        keccak256(
+                            abi.encodePacked(
+                                block.timestamp,
+                                msg.sender,
+                                randNonce
+                            )
+                        )
+                    ) %
+                    allGames.length;
+                if (ownerToGame[allGames[gameIdx]].createdBy != msg.sender)
+                    break;
+                tries += 1;
+
+                randNonce++;
+            }
+            // could not find a game which could be joined return.
+            require(tries != 10, "Could not find a game you could join");
+
+            Game storage randGame = ownerToGame[allGames[gameIdx]];
+
+            randGame.players.push(msg.sender);
+            randGame.playerBids.push(0);
+            randGame.playerCards.push("");
+
+            joinedGame[msg.sender] = randGame.createdBy;
+
+            emit GameInfo(
+                randGame.gameIdx,
+                randGame.createdBy,
+                randGame.players,
+                randGame.playerBids,
+                randGame.playerCards
+            );
+        }
+    }
 }
