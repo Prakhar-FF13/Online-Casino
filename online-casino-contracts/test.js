@@ -322,6 +322,7 @@ describe("Casino War", () => {
       assert.equal(gameIdx, res[0]);
     });
   });
+
   describe("Game Joining", async () => {
     it("Should not join the game if no game is available", async () => {
       try {
@@ -454,6 +455,88 @@ describe("Casino War", () => {
       assert.equal(accounts[1], res[2][0]);
       assert.equal(accounts[2], res[2][1]);
       assert.equal(accounts[3], res[2][2]);
+    });
+  });
+
+  describe("Player Bidding", async () => {
+    it("Should not allow bidding if bid is too low", async () => {
+      try {
+        await war.methods.createGame().send({
+          from: accounts[0],
+          gas: 200000,
+        });
+
+        await war.methods.joinGame().send({
+          from: accounts[1],
+          gas: 200000,
+        });
+
+        await war.methods.playerBid().send({
+          from: accounts[1],
+          gas: 200000,
+          value: web3.utils.toWei("0.00000001"),
+        });
+      } catch (e) {
+        assert.equal("Bid too low", e.results[e.hashes[0]].reason);
+      }
+    });
+
+    it("Should not allow dealer to bid", async () => {
+      try {
+        await war.methods.createGame().send({
+          from: accounts[0],
+          gas: 200000,
+        });
+
+        await war.methods.playerBid().send({
+          from: accounts[0],
+          gas: 200000,
+          value: web3.utils.toWei("0.0001"),
+        });
+      } catch (e) {
+        assert.equal(
+          "Join a game to start bidding",
+          e.results[e.hashes[0]].reason
+        );
+      }
+    });
+
+    it("Should not allow a player to bid if a ame hasn't been joined", async () => {
+      try {
+        await war.methods.createGame().send({
+          from: accounts[0],
+          gas: 200000,
+        });
+
+        await war.methods.playerBid().send({
+          from: accounts[1],
+          gas: 200000,
+          value: web3.utils.toWei("0.0001"),
+        });
+      } catch (e) {
+        assert.equal(
+          "Join a game to start bidding",
+          e.results[e.hashes[0]].reason
+        );
+      }
+    });
+
+    it("Should allow a playerto bid in the joined game", async () => {
+      await war.methods.createGame().send({
+        from: accounts[0],
+        gas: 200000,
+      });
+
+      await war.methods.joinGame().send({
+        from: accounts[1],
+        gas: 200000,
+      });
+
+      await war.methods.playerBid().send({
+        from: accounts[1],
+        gas: 200000,
+        value: web3.utils.toWei("0.0001"),
+      });
     });
   });
 });

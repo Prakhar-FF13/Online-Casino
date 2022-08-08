@@ -52,7 +52,7 @@ contract WarGame {
             g.gameMoney = 0;
             ownerToGame[msg.sender] = g;
             allGames.push(g.createdBy);
-            g.gameIdx = uint16(allGames.length);
+            g.gameIdx = uint16(allGames.length - 1);
             emit GameInfo(
                 g.gameIdx,
                 g.createdBy,
@@ -160,6 +160,32 @@ contract WarGame {
                 randGame.playerBids,
                 randGame.playerCards
             );
+        }
+    }
+
+    function playerBid() public payable {
+        require(msg.value >= 0.00001 ether, "Bid too low");
+        Game storage game = ownerToGame[joinedGame[msg.sender]];
+        require(
+            game.state == GameState.STARTED,
+            "Join a game to start bidding"
+        );
+        require(
+            game.createdBy != msg.sender,
+            "Game dealer cannot bid on his game"
+        );
+        for (uint16 i = 0; i < game.players.length; i++) {
+            if (game.players[i] == msg.sender) {
+                game.playerBids[i] = msg.value;
+                emit GameInfo(
+                    game.gameIdx,
+                    game.createdBy,
+                    game.players,
+                    game.playerBids,
+                    game.playerCards
+                );
+                return;
+            }
         }
     }
 }
