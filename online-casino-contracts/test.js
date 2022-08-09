@@ -268,7 +268,7 @@ describe("Casino War", () => {
       .deploy({
         data: "0x" + contracts.WarGame.bytecode,
       })
-      .send({ from: accounts[0], gas: 3000000 });
+      .send({ from: accounts[0], gas: 4000000 });
 
     assert.ok(war["_address"]);
   });
@@ -277,7 +277,8 @@ describe("Casino War", () => {
     it("Should create the game", async () => {
       await war.methods.createGame().send({
         from: accounts[0],
-        gas: 2000000,
+        gas: 3000000,
+        value: web3.utils.toWei("0.001")
       });
 
       const res = await war.methods.fetchCreatedGame().call({
@@ -286,6 +287,20 @@ describe("Casino War", () => {
       });
 
       assert.equal(gameState.STARTED, res[4]);
+    });
+
+    it("Should not create the game if minimum bid not specified", async () => {
+      try {
+        await war.methods.createGame().send({
+          from: accounts[0],
+          gas: 3000000,
+          value: web3.utils.toWei("0.00001")
+        });
+        throw new Error("Game Created");
+      } catch (e) {
+        assert.strictEqual("Dealer must provide at-least 0.001 ethers to begin the game",
+            e.results[e.hashes[0]].reason);
+      }
     });
 
     it("Should return NOTSTARTED as state if game is not created", async () => {
@@ -300,6 +315,7 @@ describe("Casino War", () => {
       await war.methods.createGame().send({
         from: accounts[0],
         gas: 2000000,
+        value: web3.utils.toWei("0.001")
       });
 
       let res = await war.methods.fetchCreatedGame().call({
@@ -312,6 +328,7 @@ describe("Casino War", () => {
       await war.methods.createGame().send({
         from: accounts[0],
         gas: 2000000,
+        value: web3.utils.toWei("0.001")
       });
 
       res = await war.methods.fetchCreatedGame().call({
@@ -339,6 +356,7 @@ describe("Casino War", () => {
       await war.methods.createGame().send({
         from: accounts[0],
         gas: 200000,
+        value: web3.utils.toWei("0.001")
       });
 
       await war.methods.joinGame().send({
@@ -365,6 +383,7 @@ describe("Casino War", () => {
       await war.methods.createGame().send({
         from: accounts[0],
         gas: 200000,
+        value: web3.utils.toWei("0.001")
       });
 
       await war.methods.joinGame().send({
@@ -381,16 +400,19 @@ describe("Casino War", () => {
       await war.methods.createGame().send({
         from: accounts[2],
         gas: 200000,
+        value: web3.utils.toWei("0.001")
       });
 
       await war.methods.createGame().send({
         from: accounts[3],
         gas: 200000,
+        value: web3.utils.toWei("0.001")
       });
 
       await war.methods.createGame().send({
         from: accounts[4],
         gas: 200000,
+        value: web3.utils.toWei("0.001")
       });
 
       await war.methods.joinGame().send({
@@ -410,6 +432,7 @@ describe("Casino War", () => {
       await war.methods.createGame().send({
         from: accounts[0],
         gas: 200000,
+        value: web3.utils.toWei("0.001")
       });
 
       try {
@@ -429,6 +452,7 @@ describe("Casino War", () => {
       await war.methods.createGame().send({
         from: accounts[0],
         gas: 200000,
+        value: web3.utils.toWei("0.001")
       });
 
       await war.methods.joinGame().send({
@@ -464,6 +488,7 @@ describe("Casino War", () => {
         await war.methods.createGame().send({
           from: accounts[0],
           gas: 200000,
+          value: web3.utils.toWei("0.001")
         });
 
         await war.methods.joinGame().send({
@@ -481,11 +506,35 @@ describe("Casino War", () => {
       }
     });
 
+    it("Should not allow bidding if bid is too high", async () => {
+      try {
+        await war.methods.createGame().send({
+          from: accounts[0],
+          gas: 200000,
+          value: web3.utils.toWei("0.001")
+        });
+
+        await war.methods.joinGame().send({
+          from: accounts[1],
+          gas: 200000,
+        });
+
+        await war.methods.playerBid().send({
+          from: accounts[1],
+          gas: 200000,
+          value: web3.utils.toWei("0.006"),
+        });
+      } catch (e) {
+        assert.equal("Bid too high", e.results[e.hashes[0]].reason);
+      }
+    });
+
     it("Should not allow dealer to bid", async () => {
       try {
         await war.methods.createGame().send({
           from: accounts[0],
           gas: 200000,
+          value: web3.utils.toWei("0.001")
         });
 
         await war.methods.playerBid().send({
@@ -501,11 +550,12 @@ describe("Casino War", () => {
       }
     });
 
-    it("Should not allow a player to bid if a ame hasn't been joined", async () => {
+    it("Should not allow a player to bid if a game hasn't been joined", async () => {
       try {
         await war.methods.createGame().send({
           from: accounts[0],
           gas: 200000,
+          value: web3.utils.toWei("0.001")
         });
 
         await war.methods.playerBid().send({
@@ -521,10 +571,11 @@ describe("Casino War", () => {
       }
     });
 
-    it("Should allow a playerto bid in the joined game", async () => {
+    it("Should allow a player to bid in the joined game", async () => {
       await war.methods.createGame().send({
         from: accounts[0],
         gas: 200000,
+        value: web3.utils.toWei("0.001")
       });
 
       await war.methods.joinGame().send({
@@ -537,6 +588,244 @@ describe("Casino War", () => {
         gas: 200000,
         value: web3.utils.toWei("0.0001"),
       });
+
+      const res = await war.methods.fetchCreatedGame().call({
+        from: accounts[0],
+        gas:200000
+      });
+
+      assert.strictEqual(web3.utils.toWei("0.0001"),res[3][0]);
+    });
+  });
+
+  describe("Game Round", async () => {
+    it("Should only play the round if game has started", async () => {
+      try {
+        await war.methods.playRound(["Ac"]).send({
+          from: accounts[0],
+          gas: 200000
+        });
+      } catch (e) {
+        assert.strictEqual("Start a game to start the round", e.results[e.hashes[0]].reason);
+      }
+    })
+
+    it("Dealer should win if his card is better than the player's card", async () => {
+      await war.methods.createGame().send({
+        from: accounts[0],
+        gas: 200000,
+        value: web3.utils.toWei("0.001")
+      });
+
+      await war.methods.joinGame().send({
+        from: accounts[1],
+        gas: 200000
+      });
+
+      await war.methods.playerBid().send({
+        from: accounts[1],
+        gas: 2000000,
+        value: web3.utils.toWei("0.0002")
+      });
+
+      const prevBalance = BigInt(String(await web3.eth.getBalance(accounts[0])));
+
+      await war.methods.playRound(["Kc", "Ac"]).send({
+        from: accounts[0],
+        gas: 200000
+      });
+
+      const newBalance = BigInt(String(await web3.eth.getBalance(accounts[0])));
+
+      assert(newBalance > prevBalance);
+    });
+
+    it("Player should win if his card is better than the dealer's card", async () => {
+      await war.methods.createGame().send({
+        from: accounts[0],
+        gas: 200000,
+        value: web3.utils.toWei("0.001")
+      });
+
+      await war.methods.joinGame().send({
+        from: accounts[1],
+        gas: 200000
+      });
+
+      await war.methods.playerBid().send({
+        from: accounts[1],
+        gas: 200000,
+        value: web3.utils.toWei("0.0002")
+      });
+
+      const prevBalance = await web3.eth.getBalance(accounts[1]);
+
+      await war.methods.playRound(["Ac", "Kc"]).send({
+        from: accounts[0],
+        gas: 200000
+      });
+
+      const newBalance = await web3.eth.getBalance(accounts[1]);
+
+      const x = BigInt(prevBalance) + BigInt(String(web3.utils.toWei("0.00039")));
+
+      assert(BigInt(newBalance) >= x);
+    });
+
+    it("All players should win if their cards are better than dealers cards", async () => {
+      await war.methods.createGame().send({
+        from: accounts[0],
+        gas: 200000,
+        value: web3.utils.toWei("0.001")
+      });
+
+      await war.methods.joinGame().send({
+        from: accounts[1],
+        gas: 200000
+      });
+
+      await war.methods.playerBid().send({
+        from: accounts[1],
+        gas: 200000,
+        value: web3.utils.toWei("0.0002")
+      });
+
+      const prevBalance1 = await web3.eth.getBalance(accounts[1]);
+
+      await war.methods.joinGame().send({
+        from: accounts[2],
+        gas: 200000
+      });
+
+      await war.methods.playerBid().send({
+        from: accounts[2],
+        gas: 200000,
+        value: web3.utils.toWei("0.0002")
+      });
+
+      const prevBalance2 = await web3.eth.getBalance(accounts[2]);
+
+      await war.methods.joinGame().send({
+        from: accounts[3],
+        gas: 200000
+      });
+
+      await war.methods.playerBid().send({
+        from: accounts[3],
+        gas: 200000,
+        value: web3.utils.toWei("0.0002")
+      });
+
+      const prevBalance3 = await web3.eth.getBalance(accounts[3]);
+
+      await war.methods.playRound(["Ac", "Ak", "Ad", "Kc"]).send({
+        from: accounts[0],
+        gas: 200000
+      });
+
+      const newBalance1 = await web3.eth.getBalance(accounts[1]);
+      const newBalance2 = await web3.eth.getBalance(accounts[2]);
+      const newBalance3 = await web3.eth.getBalance(accounts[3]);
+
+      assert(newBalance1 > prevBalance1);
+      assert(newBalance2 > prevBalance2);
+      assert(newBalance3 > prevBalance3);
+    });
+
+    it("Dealer should win if his card is better than all the players cards", async () => {
+      await war.methods.createGame().send({
+        from: accounts[0],
+        gas: 200000,
+        value: web3.utils.toWei("0.001")
+      });
+
+      await war.methods.joinGame().send({
+        from: accounts[1],
+        gas: 200000
+      });
+
+      await war.methods.playerBid().send({
+        from: accounts[1],
+        gas: 200000,
+        value: web3.utils.toWei("0.0002")
+      });
+
+      await war.methods.joinGame().send({
+        from: accounts[2],
+        gas: 200000
+      });
+
+      await war.methods.playerBid().send({
+        from: accounts[2],
+        gas: 200000,
+        value: web3.utils.toWei("0.0002")
+      });
+
+      await war.methods.joinGame().send({
+        from: accounts[3],
+        gas: 200000
+      });
+
+      await war.methods.playerBid().send({
+        from: accounts[3],
+        gas: 200000,
+        value: web3.utils.toWei("0.0002")
+      });
+
+      const prevBalance = BigInt(String(await web3.eth.getBalance(accounts[0])));
+
+      await war.methods.playRound(["Kc", "Kk", "Kd", "Ac"]).send({
+        from: accounts[0],
+        gas: 200000
+      });
+
+      const newBalance = BigInt(String(await  web3.eth.getBalance(accounts[0])));
+
+      assert(newBalance > prevBalance);
+    });
+
+    it("It should be possible for some players to win and other players to lose against the dealer in the same game", async () => {
+      await war.methods.createGame().send({
+        from: accounts[0],
+        gas: 200000,
+        value: web3.utils.toWei("0.001")
+      });
+
+      await war.methods.joinGame().send({
+        from: accounts[1],
+        gas: 200000
+      });
+
+      await war.methods.playerBid().send({
+        from: accounts[1],
+        gas: 200000,
+        value: web3.utils.toWei("0.0002")
+      });
+
+      await war.methods.joinGame().send({
+        from: accounts[2],
+        gas: 200000
+      });
+
+      await war.methods.playerBid().send({
+        from: accounts[2],
+        gas: 200000,
+        value: web3.utils.toWei("0.0002")
+      });
+
+      const prevBalance1 = await web3.eth.getBalance(accounts[1]);
+      const prevBalance2 = await web3.eth.getBalance(accounts[2]);
+
+      await war.methods.playRound(["2c", "6d", "4c"]).send({
+        from: accounts[0],
+        gas: 200000
+      });
+
+      const newBalance1 = await web3.eth.getBalance(accounts[1]);
+      const newBalance2 = await web3.eth.getBalance(accounts[2]);
+
+      assert(newBalance1 === prevBalance1);
+      assert(newBalance2 > prevBalance2);
     });
   });
 });

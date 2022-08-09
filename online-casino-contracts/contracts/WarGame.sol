@@ -13,7 +13,7 @@ contract WarGame {
 
     // variables which define a game.
     struct Game {
-        uint16 gameIdx;
+        uint256 gameIdx;
         address createdBy; // game creator address.
         address[] players; // player addresses.
         uint256[] playerBids; // bids of players.
@@ -27,7 +27,7 @@ contract WarGame {
     address[] allGames;
 
     event GameInfo(
-        uint16 gameIdx,
+        uint256 gameIdx,
         address createdBy,
         address[] players,
         uint256[] playerBids,
@@ -35,7 +35,7 @@ contract WarGame {
     );
 
     // store game created by an individual.
-    function createGame() public {
+    function createGame() public payable {
         Game storage game = ownerToGame[msg.sender];
         if (game.state == GameState.STARTED) {
             emit GameInfo(
@@ -46,13 +46,17 @@ contract WarGame {
                 game.playerCards
             );
         } else {
+            require(
+                msg.value >= 0.001 ether,
+                "Dealer must provide at-least 0.001 ethers to begin the game"
+            );
             Game memory g;
             g.createdBy = msg.sender;
             g.state = GameState.STARTED;
-            g.gameMoney = 0;
+            g.gameMoney = msg.value;
             ownerToGame[msg.sender] = g;
             allGames.push(g.createdBy);
-            g.gameIdx = uint16(allGames.length - 1);
+            g.gameIdx = uint256(allGames.length - 1);
             emit GameInfo(
                 g.gameIdx,
                 g.createdBy,
@@ -67,7 +71,7 @@ contract WarGame {
         public
         view
         returns (
-            uint16,
+            uint256,
             address,
             address[] memory,
             uint256[] memory,
@@ -89,7 +93,7 @@ contract WarGame {
         public
         view
         returns (
-            uint16,
+            uint256,
             address,
             address[] memory,
             uint256[] memory,
@@ -164,7 +168,8 @@ contract WarGame {
     }
 
     function playerBid() public payable {
-        require(msg.value >= 0.00001 ether, "Bid too low");
+        require(msg.value >= 0.0001 ether, "Bid too low");
+        require(msg.value <= 0.0002 ether, "Bid too high");
         Game storage game = ownerToGame[joinedGame[msg.sender]];
         require(
             game.state == GameState.STARTED,
@@ -213,6 +218,20 @@ contract WarGame {
         return string(firstCharByte);
     }
 
+    function st2num(string memory numString) public pure returns(uint) {
+        uint  val=0;
+        bytes   memory stringBytes = bytes(numString);
+        for (uint  i =  0; i<stringBytes.length; i++) {
+            uint exp = stringBytes.length - i;
+            bytes1 ival = stringBytes[i];
+            uint8 uval = uint8(ival);
+            uint jval = uval - uint(0x30);
+            val +=  (uint(jval) * (10**(exp-1)));
+        }
+        return val;
+    }
+
+
     // returns true if card x > card y.
     function compareCard(string memory p, string memory q)
         private
@@ -246,15 +265,17 @@ contract WarGame {
         // y is J, y wins if x isn't Ace(A) or King(K) or Queen(Q).
         if (y == J) return (x == A || x == K || x == Q);
 
-        return x >= y;
+        return st2num(getFirstChar(p)) >= st2num(getFirstChar(q));
     }
 
+    // dealers card is the last card.
     function playRound(string[] memory cards) public payable {
         Game storage game = ownerToGame[msg.sender];
         require(
             game.state == GameState.STARTED,
             "Start a game to start the round"
         );
+        require(game.createdBy == msg.sender, "Only game dealer can start the round");
         for (uint16 i = 0; i < game.players.length; i++) {
             game.playerCards[i] = cards[i];
         }
@@ -266,6 +287,16 @@ contract WarGame {
             game.playerCards
         );
         string memory dealerCard = cards[cards.length - 1];
-        for (uint16 i = 0; i < game.players.length; i++) {}
+        address payable x;
+        for (uint16 i = 0; i < game.players.length; i++) {
+            if (compareCard(game.playerCards[i], dealerCard)) {
+                x = payable(game.players[i]);
+                x.call{value: game.playerBids[i] * 2, gas: 200000}("");
+            } else {
+                x = payable(msg.sender);
+                x.call{value: game.playerBids[i], gas: 200000}("");
+            }
+            game.playerBids[i] = 0;
+        }
     }
 }
