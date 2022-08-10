@@ -182,6 +182,7 @@ contract WarGame {
         for (uint16 i = 0; i < game.players.length; i++) {
             if (game.players[i] == msg.sender) {
                 game.playerBids[i] = msg.value;
+                game.gameMoney += msg.value;
                 emit GameInfo(
                     game.gameIdx,
                     game.createdBy,
@@ -199,14 +200,6 @@ contract WarGame {
     bytes32 K = keccak256(abi.encodePacked("K"));
     bytes32 Q = keccak256(abi.encodePacked("Q"));
     bytes32 J = keccak256(abi.encodePacked("J"));
-    bytes32 two = keccak256(abi.encodePacked("2"));
-    bytes32 three = keccak256(abi.encodePacked("3"));
-    bytes32 four = keccak256(abi.encodePacked("4"));
-    bytes32 five = keccak256(abi.encodePacked("5"));
-    bytes32 six = keccak256(abi.encodePacked("6"));
-    bytes32 seven = keccak256(abi.encodePacked("7"));
-    bytes32 eight = keccak256(abi.encodePacked("8"));
-    bytes32 nine = keccak256(abi.encodePacked("9"));
 
     function getFirstChar(string memory _originString)
         public
@@ -268,7 +261,6 @@ contract WarGame {
         return st2num(getFirstChar(p)) >= st2num(getFirstChar(q));
     }
 
-    // dealers card is the last card.
     function playRound(string[] memory cards) public payable {
         Game storage game = ownerToGame[msg.sender];
         require(
@@ -292,11 +284,38 @@ contract WarGame {
             if (compareCard(game.playerCards[i], dealerCard)) {
                 x = payable(game.players[i]);
                 x.call{value: game.playerBids[i] * 2, gas: 200000}("");
+                game.gameMoney -= game.playerBids[i] * 2;
             } else {
                 x = payable(msg.sender);
                 x.call{value: game.playerBids[i], gas: 200000}("");
             }
             game.playerBids[i] = 0;
         }
+    }
+
+    function endGame() public payable {
+        Game storage game = ownerToGame[msg.sender];
+        require(
+            game.state == GameState.STARTED,
+            "No game exists"
+        );
+        require(game.createdBy == msg.sender, "Only game dealer can end the game");
+        for (uint16 i = 0; i < game.players.length; i++) {
+            if (game.playerBids[i] > 0) {
+                address payable x = payable(game.players[i]);
+                x.call{value: game.playerBids[i], gas: 200000}("");
+                game.gameMoney -= game.playerBids[i];
+                game.playerBids[i] = 0;
+            }
+        }
+        address payable x = payable(msg.sender);
+        x.call{value: game.gameMoney, gas: 200000}("");
+        emit GameInfo(
+            game.gameIdx,
+            game.createdBy,
+            game.players,
+            game.playerBids,
+            game.playerCards
+        );
     }
 }

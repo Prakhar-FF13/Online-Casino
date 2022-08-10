@@ -720,7 +720,7 @@ describe("Casino War", () => {
 
       await war.methods.playRound(["Ac", "Ak", "Ad", "Kc"]).send({
         from: accounts[0],
-        gas: 200000
+        gas: 300000
       });
 
       const newBalance1 = await web3.eth.getBalance(accounts[1]);
@@ -825,6 +825,68 @@ describe("Casino War", () => {
       const newBalance2 = await web3.eth.getBalance(accounts[2]);
 
       assert(newBalance1 === prevBalance1);
+      assert(newBalance2 > prevBalance2);
+    });
+  });
+
+  describe("Game End", async () => {
+    it("Should only end the game if the game has started", async () => {
+      try {
+        await war.methods.endGame().send({
+          from: accounts[0],
+          gas: 200000,
+        });
+
+        throw new Error("Game ended");
+      } catch (e) {
+        assert.strictEqual("No game exists", e.results[e.hashes[0]].reason);
+      }
+    });
+
+    it("Should return money bid by the players and remaining money to dealer if game ends", async () => {
+      await war.methods.createGame().send({
+        from: accounts[0],
+        gas:200000,
+        value: web3.utils.toWei("0.001")
+      });
+
+      await war.methods.joinGame().send({
+        from: accounts[1],
+        gas: 200000
+      });
+
+      await war.methods.joinGame().send({
+        from: accounts[2],
+        gas: 200000
+      });
+
+      await war.methods.playerBid().send({
+        from: accounts[1],
+        gas: 2000000,
+        value: web3.utils.toWei("0.0001")
+      });
+
+      await war.methods.playerBid().send({
+        from: accounts[2],
+        gas: 2000000,
+        value: web3.utils.toWei("0.0001")
+      });
+
+      const prevBalance0 = await web3.eth.getBalance(accounts[0]);
+      const prevBalance1 = await web3.eth.getBalance(accounts[1]);
+      const prevBalance2 = await web3.eth.getBalance(accounts[2]);
+
+      await war.methods.endGame().send({
+        from: accounts[0],
+        gas: 200000
+      });
+
+      const newBalance0 = await web3.eth.getBalance(accounts[0]);
+      const newBalance1 = await web3.eth.getBalance(accounts[1]);
+      const newBalance2 = await web3.eth.getBalance(accounts[2]);
+
+      assert(newBalance0 > prevBalance0);
+      assert(newBalance1 > prevBalance1);
       assert(newBalance2 > prevBalance2);
     });
   });
