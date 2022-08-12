@@ -1,7 +1,7 @@
-import RoulleteGame from "./sections/RoulleteWheel/RoulleteGame";
-
+// import RoulleteGame from "./sections/RoulleteWheel/RoulleteGame";
+import WarGame from "./sections/WarGame/WarGame";
 function App() {
-  return <RoulleteGame />;
+  return <WarGame />;
 }
 
 export default App;

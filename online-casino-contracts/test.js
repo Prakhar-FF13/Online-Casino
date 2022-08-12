@@ -268,7 +268,7 @@ describe("Casino War", () => {
       .deploy({
         data: "0x" + contracts.WarGame.bytecode,
       })
-      .send({ from: accounts[0], gas: 4000000 });
+      .send({ from: accounts[0], gas: 5000000 });
 
     assert.ok(war["_address"]);
   });
@@ -277,7 +277,7 @@ describe("Casino War", () => {
     it("Should create the game", async () => {
       await war.methods.createGame().send({
         from: accounts[0],
-        gas: 3000000,
+        gas: 5000000,
         value: web3.utils.toWei("0.001")
       });
 

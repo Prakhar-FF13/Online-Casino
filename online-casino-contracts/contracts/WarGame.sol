@@ -31,7 +31,8 @@ contract WarGame {
         address createdBy,
         address[] players,
         uint256[] playerBids,
-        string[] playerCards
+        string[] playerCards,
+        string eventType
     );
 
     // store game created by an individual.
@@ -43,7 +44,8 @@ contract WarGame {
                 game.createdBy,
                 game.players,
                 game.playerBids,
-                game.playerCards
+                game.playerCards,
+                "createGame"
             );
         } else {
             require(
@@ -62,7 +64,8 @@ contract WarGame {
                 g.createdBy,
                 g.players,
                 g.playerBids,
-                g.playerCards
+                g.playerCards,
+                "createGame"
             );
         }
     }
@@ -123,7 +126,8 @@ contract WarGame {
                 ownerToGame[joinedGame[msg.sender]].createdBy,
                 ownerToGame[joinedGame[msg.sender]].players,
                 ownerToGame[joinedGame[msg.sender]].playerBids,
-                ownerToGame[joinedGame[msg.sender]].playerCards
+                ownerToGame[joinedGame[msg.sender]].playerCards,
+                "joinGame"
             );
         } else {
             uint256 gameIdx = 0;
@@ -162,7 +166,8 @@ contract WarGame {
                 randGame.createdBy,
                 randGame.players,
                 randGame.playerBids,
-                randGame.playerCards
+                randGame.playerCards,
+                "joinGame"
             );
         }
     }
@@ -188,7 +193,8 @@ contract WarGame {
                     game.createdBy,
                     game.players,
                     game.playerBids,
-                    game.playerCards
+                    game.playerCards,
+                    "playerBid"
                 );
                 return;
             }
@@ -200,6 +206,7 @@ contract WarGame {
     bytes32 K = keccak256(abi.encodePacked("K"));
     bytes32 Q = keccak256(abi.encodePacked("Q"));
     bytes32 J = keccak256(abi.encodePacked("J"));
+    bytes32 T = keccak256(abi.encodePacked("T"));
 
     function getFirstChar(string memory _originString)
         public
@@ -246,6 +253,9 @@ contract WarGame {
         // x is J, x wins if y isn't Ace(A) or King(K) or Queen(Q).
         if (x == J) return (y != A && y != K && y != Q);
 
+        // x is T, x wins if y isn't Ace(A) or King(K) or Queen(Q) or J.
+        if (x == T) return (y != A && y != K && y != Q && y != J);
+
         // y is Ace(A), x can be anything. y wins.
         if (y == A) return false;
 
@@ -257,6 +267,9 @@ contract WarGame {
 
         // y is J, y wins if x isn't Ace(A) or King(K) or Queen(Q).
         if (y == J) return (x == A || x == K || x == Q);
+
+        // x is T, x wins if y isn't Ace(A) or King(K) or Queen(Q) or J.
+        if (y == T) return (x == A || x == K || x == Q || x == J);
 
         return st2num(getFirstChar(p)) >= st2num(getFirstChar(q));
     }
@@ -276,7 +289,8 @@ contract WarGame {
             game.createdBy,
             game.players,
             game.playerBids,
-            game.playerCards
+            game.playerCards,
+            "playRound"
         );
         string memory dealerCard = cards[cards.length - 1];
         address payable x;
@@ -310,12 +324,24 @@ contract WarGame {
         }
         address payable x = payable(msg.sender);
         x.call{value: game.gameMoney, gas: 200000}("");
+
+        for (uint16 i = 0; i < allGames.length; i++) {
+            if (allGames[i] == game.createdBy) {
+                for (uint16 j = i + 1; j < allGames.length; j++)
+                    allGames[j - 1] = allGames[j];
+                break;
+            }
+        }
+        allGames.pop();
+        delete ownerToGame[msg.sender];
+
         emit GameInfo(
             game.gameIdx,
             game.createdBy,
             game.players,
             game.playerBids,
-            game.playerCards
+            game.playerCards,
+            "endGame"
         );
     }
 }

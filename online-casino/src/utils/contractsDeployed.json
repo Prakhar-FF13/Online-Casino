@@ -1,6 +1,6 @@
 {
   "Roullete": {
-    "address": "0x4Fa537Df66ed38965E81847d07E8D6b2c5B63d93",
+    "address": "0x3Aabd949C553cb51cfD3069f937651aFbA4C2a1D",
     "abi": [
       {
         "anonymous": false,
@@ -186,6 +186,227 @@
         "type": "function",
         "payable": true,
         "signature": "0xd4f77b1c"
+      }
+    ]
+  },
+  "WarGame": {
+    "address": "0xE809C8aaFCF001Fb25fF41870aFa47226e379AE4",
+    "abi": [
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "gameIdx",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "createdBy",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "address[]",
+            "name": "players",
+            "type": "address[]"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256[]",
+            "name": "playerBids",
+            "type": "uint256[]"
+          },
+          {
+            "indexed": false,
+            "internalType": "string[]",
+            "name": "playerCards",
+            "type": "string[]"
+          },
+          {
+            "indexed": false,
+            "internalType": "string",
+            "name": "eventType",
+            "type": "string"
+          }
+        ],
+        "name": "GameInfo",
+        "type": "event",
+        "signature": "0x5754d89e503f281d7057ae10f93221b426c771ec2bfc2617512d1199f248f7d3"
+      },
+      {
+        "inputs": [],
+        "name": "createGame",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function",
+        "payable": true,
+        "signature": "0x7255d729"
+      },
+      {
+        "inputs": [],
+        "name": "endGame",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function",
+        "payable": true,
+        "signature": "0x6cbc2ded"
+      },
+      {
+        "inputs": [],
+        "name": "fetchCreatedGame",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          },
+          {
+            "internalType": "address[]",
+            "name": "",
+            "type": "address[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "enum WarGame.GameState",
+            "name": "",
+            "type": "uint8"
+          },
+          {
+            "internalType": "string[]",
+            "name": "",
+            "type": "string[]"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function",
+        "constant": true,
+        "signature": "0xc898ea49"
+      },
+      {
+        "inputs": [],
+        "name": "fetchJoinedGame",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          },
+          {
+            "internalType": "address[]",
+            "name": "",
+            "type": "address[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "enum WarGame.GameState",
+            "name": "",
+            "type": "uint8"
+          },
+          {
+            "internalType": "string[]",
+            "name": "",
+            "type": "string[]"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function",
+        "constant": true,
+        "signature": "0x96346f7b"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "string",
+            "name": "_originString",
+            "type": "string"
+          }
+        ],
+        "name": "getFirstChar",
+        "outputs": [
+          {
+            "internalType": "string",
+            "name": "_firstChar",
+            "type": "string"
+          }
+        ],
+        "stateMutability": "pure",
+        "type": "function",
+        "constant": true,
+        "signature": "0x79ff2312"
+      },
+      {
+        "inputs": [],
+        "name": "joinGame",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xd4f77b1c"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "string[]",
+            "name": "cards",
+            "type": "string[]"
+          }
+        ],
+        "name": "playRound",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function",
+        "payable": true,
+        "signature": "0xdec48a29"
+      },
+      {
+        "inputs": [],
+        "name": "playerBid",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function",
+        "payable": true,
+        "signature": "0x8465278f"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "string",
+            "name": "numString",
+            "type": "string"
+          }
+        ],
+        "name": "st2num",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "pure",
+        "type": "function",
+        "constant": true,
+        "signature": "0x79cd9055"
       }
     ]
   }

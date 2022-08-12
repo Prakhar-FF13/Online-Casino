@@ -15,7 +15,7 @@ async function deploy() {
       .deploy({
         data: "0x" + contracts[x].bytecode,
       })
-      .send({ from: fetchedAccounts[0], gas: 3000000 });
+      .send({ from: fetchedAccounts[0], gas: 5000000 });
 
     contractsDeployed[x] = {
       address: result.options.address,
