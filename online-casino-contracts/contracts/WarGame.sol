@@ -45,7 +45,7 @@ contract WarGame {
                 game.players,
                 game.playerBids,
                 game.playerCards,
-                "createGame"
+                "fetchGame"
             );
         } else {
             require(
@@ -127,7 +127,7 @@ contract WarGame {
                 ownerToGame[joinedGame[msg.sender]].players,
                 ownerToGame[joinedGame[msg.sender]].playerBids,
                 ownerToGame[joinedGame[msg.sender]].playerCards,
-                "joinGame"
+                "joinPrevGame"
             );
         } else {
             uint256 gameIdx = 0;
@@ -174,7 +174,7 @@ contract WarGame {
 
     function playerBid() public payable {
         require(msg.value >= 0.0001 ether, "Bid too low");
-        require(msg.value <= 0.0002 ether, "Bid too high");
+        require(msg.value <= 0.0003 ether, "Bid too high");
         Game storage game = ownerToGame[joinedGame[msg.sender]];
         require(
             game.state == GameState.STARTED,
@@ -284,14 +284,6 @@ contract WarGame {
         for (uint16 i = 0; i < game.players.length; i++) {
             game.playerCards[i] = cards[i];
         }
-        emit GameInfo(
-            game.gameIdx,
-            game.createdBy,
-            game.players,
-            game.playerBids,
-            game.playerCards,
-            "playRound"
-        );
         string memory dealerCard = cards[cards.length - 1];
         address payable x;
         for (uint16 i = 0; i < game.players.length; i++) {
@@ -305,6 +297,15 @@ contract WarGame {
             }
             game.playerBids[i] = 0;
         }
+        game.playerCards.push(dealerCard);
+        emit GameInfo(
+            game.gameIdx,
+            game.createdBy,
+            game.players,
+            game.playerBids,
+            game.playerCards,
+            "playRound"
+        );
     }
 
     function endGame() public payable {
@@ -314,6 +315,7 @@ contract WarGame {
             "No game exists"
         );
         require(game.createdBy == msg.sender, "Only game dealer can end the game");
+        game.state = GameState.ENDED;
         for (uint16 i = 0; i < game.players.length; i++) {
             if (game.playerBids[i] > 0) {
                 address payable x = payable(game.players[i]);
@@ -321,6 +323,7 @@ contract WarGame {
                 game.gameMoney -= game.playerBids[i];
                 game.playerBids[i] = 0;
             }
+            delete joinedGame[game.players[i]];
         }
         address payable x = payable(msg.sender);
         x.call{value: game.gameMoney, gas: 200000}("");

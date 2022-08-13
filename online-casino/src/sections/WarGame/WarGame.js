@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { ReactNotifications, Store } from "react-notifications-component";
 import "react-notifications-component/dist/theme.css";
 import { RiseLoader } from "react-spinners";
 import styled from "styled-components";
 import web3 from "../../utils/web3";
+import Card from "react-free-playing-cards/lib/TcN";
+import {Store} from "react-notifications-component";
 const contracts = require("../../utils/contractsDeployed.json");
 
 const override = {
@@ -30,6 +31,7 @@ const ButtonContainer = styled.div`
 
 const GameContainer = styled.div`
   display: flex;
+  flex-direction: column;
 `;
 
 const Button = styled.button`
@@ -42,6 +44,24 @@ const Button = styled.button`
   flex: 1;
   cursor: pointer;
 `;
+
+const cardNumb = ["2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"];
+const cardSuit = ["c", "d", "h", "s"];
+
+function getRandomCard() {
+    const card = cardNumb[Math.floor(Math.random()*cardNumb.length)];
+    const suit = cardSuit[Math.floor(Math.random()*cardSuit.length)];
+    return card + suit;
+}
+
+function getCardForPlayers(numbOfPlayers) {
+    console.log(numbOfPlayers);
+    const cards = []
+    for(let i = 0 ; i < numbOfPlayers; i++) {
+        cards.push(getRandomCard());
+    }
+    return cards;
+}
 
 function WarGame() {
     const [state, setState] = useState({});
@@ -194,7 +214,7 @@ function WarGame() {
     const playRound = async () => {
         setLoading(true);
         try {
-            await war.methods.playRound().send({
+            await war.methods.playRound(getCardForPlayers(state.players.length + 1)).send({
                 from: state.account,
                 gas: 300000
             });
@@ -255,8 +275,23 @@ function WarGame() {
         </Container>
     }
 
+    const Cards = []
+    for(let i =0 ; state.playerCards && i < state.playerCards.length; i++) {
+        if (state.playerCards[i].length === 2) {
+            Cards.push(
+                <div style={{display: "flex", flexDirection: "column"}} key={Math.random()}>
+                    <Card card={state.playerCards[i]} size={200}/>
+                    <span>{state.players[i] === state.account ? "You" : (
+                        i === state.playerCards.length - 1 ? "Dealer" : `Player ${i}`
+                    )}</span>
+                </div>
+            )
+        }
+    }
+
+    console.log(state);
+
     return <>
-        <ReactNotifications />
         <Container>
         <ButtonContainer>
             <span style={{flex: 1, display: "flex"}}>
@@ -270,6 +305,7 @@ function WarGame() {
             <Button onClick={() => {closeGame()}}>Close Game</Button>
         </ButtonContainer>
         <GameContainer>
+            <div style={{display: "flex", flex: 1}}>
             {
                 state.createdBy !== null ?
                 state.account === state.createdBy ?
@@ -283,6 +319,10 @@ function WarGame() {
                 :
                 null
             }
+            </div>
+            <div style={{display: "flex" , flex: 1, marginTop: "16px"}}>
+                {Cards}
+            </div>
         </GameContainer>
     </Container>
     </>

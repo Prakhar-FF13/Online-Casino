@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { ReactNotifications, Store } from "react-notifications-component";
 import "react-notifications-component/dist/theme.css";
 import { RiseLoader } from "react-spinners";
 import styled from "styled-components";
 import CreateRoulleteGame from "./CreateRoulleteGame";
 import web3 from "../../utils/web3";
+import {Store} from "react-notifications-component";
 
 const contracts = require("../../utils/contractsDeployed.json");
 
@@ -332,7 +332,6 @@ function RoulleteGame() {
 
   return (
     <>
-      <ReactNotifications />
       <Container>
         <ButtonContainer>
           <Button

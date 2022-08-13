@@ -1,6 +1,6 @@
 {
   "Roullete": {
-    "address": "0x3Aabd949C553cb51cfD3069f937651aFbA4C2a1D",
+    "address": "0xD086f24F741365f6CE75b094f4AaE8cb10Aa6a16",
     "abi": [
       {
         "anonymous": false,
@@ -190,7 +190,7 @@
     ]
   },
   "WarGame": {
-    "address": "0xE809C8aaFCF001Fb25fF41870aFa47226e379AE4",
+    "address": "0xD45D62948dFCA83372F6205c89CD3ca747Dd0876",
     "abi": [
       {
         "anonymous": false,

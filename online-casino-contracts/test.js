@@ -625,14 +625,14 @@ describe("Casino War", () => {
       await war.methods.playerBid().send({
         from: accounts[1],
         gas: 2000000,
-        value: web3.utils.toWei("0.0002")
+        value: web3.utils.toWei("0.0003")
       });
 
       const prevBalance = BigInt(String(await web3.eth.getBalance(accounts[0])));
 
       await war.methods.playRound(["Kc", "Ac"]).send({
         from: accounts[0],
-        gas: 200000
+        gas: 300000
       });
 
       const newBalance = BigInt(String(await web3.eth.getBalance(accounts[0])));
@@ -776,7 +776,7 @@ describe("Casino War", () => {
 
       await war.methods.playRound(["Kc", "Kk", "Kd", "Ac"]).send({
         from: accounts[0],
-        gas: 200000
+        gas: 300000
       });
 
       const newBalance = BigInt(String(await  web3.eth.getBalance(accounts[0])));
@@ -818,7 +818,7 @@ describe("Casino War", () => {
 
       await war.methods.playRound(["2c", "6d", "4c"]).send({
         from: accounts[0],
-        gas: 200000
+        gas: 300000
       });
 
       const newBalance1 = await web3.eth.getBalance(accounts[1]);
