@@ -8,11 +8,20 @@ TechStack:
 3. Solidity Contracts.
 4. Ethereum Blockchain.
 
-Current Progress:
+How to get it working:
 
-Functionality from backend complete.
+Contracts:
 
-ToDo:
+1. Create .env folder in online-casino-contracts folder.
+2. Create two environment variables:
+   1. CODE: metamask mneumonic.
+   2. LINK: link of network where to deploy the contract.
+3. npm install to install the node packages.
+4. npm run test to test the contracts written.
+5. npm deploy to deploy the contract. (Contract was already deployed, so unless you make any changes no need to rerun this command)
 
-1. Show player count on UI.
-2. Automatically update player count on UI when a new player joins.
+Frontend:
+
+1. run yarn - to install the packages.
+2. npm start - to start the development server.
+3. go to localhost:3000 to see the page.
