@@ -11,6 +11,7 @@
     "react-dom": "^16.3.1",
     "react-free-playing-cards": "^0.4.2",
     "react-notifications-component": "^4.0.1",
+    "react-router-dom": "6",
     "react-scripts": "4.0.3",
     "react-spinners": "^0.13.3",
     "styled-components": "^5.3.5",
